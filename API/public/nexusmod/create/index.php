@@ -29,7 +29,7 @@ if (empty($_POST["key"])) {
   e("Invalid auth key", $code=403);
 }
 
-$fields = array("mod_id", "mod_name", "mod_desc", "file_id", "size_kb", "category_name", "content_preview", "external_virus_scan_url");
+$fields = array("mod_id", "mod_name", "mod_desc", "mod_version", "file_id", "size_kb", "category_name", "content_preview", "external_virus_scan_url");
 $inputs = array();
 
 $valstring = "";
@@ -80,8 +80,7 @@ if (json_last_error() != JSON_ERROR_NONE) {
 $sqlstr = "INSERT INTO skyrim ({$valstring}) VALUES ({$markstring})";
 
 $sql = $conn->prepare($sqlstr);
-$fields = array("mod_id", "mod_name", "mod_desc", "file_id", "size_kb", "category_name", "content_preview", "external_virus_scan_url");
-$sql->bind_param("ssssssss", $inputs["mod_id"], $inputs["mod_name"], $inputs["mod_desc"], $inputs["file_id"], $inputs["size_kb"], $inputs["category_name"], $inputs["content_preview"], $inputs["external_virus_scan_url"]);
+$sql->bind_param("ssssssss", $inputs["mod_id"], $inputs["mod_name"], $inputs["mod_desc"], $inputs["mod_version"], $inputs["file_id"], $inputs["size_kb"], $inputs["category_name"], $inputs["content_preview"], $inputs["external_virus_scan_url"]);
 
 $sql->execute();
 $sql->close();

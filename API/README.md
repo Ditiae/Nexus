@@ -7,6 +7,7 @@ Params
  * `mod_id` (required and must be int)
  * `mod_name` (required)
  * `mod_desc`
+ * `mod_version`
  * `file_id` (required and must be int)
  * `size_kb` (required and must be int)
  * `category_name`
