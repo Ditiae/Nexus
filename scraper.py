@@ -25,7 +25,7 @@ for mod_id in x:
     print(f"I'm on mod number: {mod_id}!")
     html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{game}/mods/{mod_id}").content).h3)
     print(html[html.find('>')+1:html.find('<', 2)])
-    if any(x in html for x not in ["Hidden mod", "Not Found"]):
+    if not any(x in html for x in ["Hidden mod", "Not Found"]):
         r = requests.get(f"https://api.nexusmods.com/v1/games/{game}/mods/{mod_id}/files.json", headers=headers)
         if r.ok:
             c = json.loads(r.content)
