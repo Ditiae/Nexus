@@ -19,23 +19,23 @@ cursor = conn.cursor()
 
 mods = {}
 
-x = range(1, 100)
+x = range(1, 150)
 # x = range(100000, 100010)
 for mod_id in x:
     print(f"I'm on mod number: {mod_id}!")
     html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{game}/mods/{mod_id}").content).h3)
     print(html[html.find('>')+1:html.find('<', 2)])
-    if any(x in html for x in ["Hidden mod", "Not Found"]):
+    if any(x in html for x not in ["Hidden mod", "Not Found"]):
         r = requests.get(f"https://api.nexusmods.com/v1/games/{game}/mods/{mod_id}/files.json", headers=headers)
-        if r.status_code == 200:
+        if r.ok:
             c = json.loads(r.content)
             files = c['files']
             x = range(1, len(files))
             for n in x:
                 file = files[n]
                 j = json.loads(requests.get(file['content_preview_link']).content)
-                insert_query = f""" INSERT INTO {game} (MOD_ID, MOD_NAME, MOD_DESC, MOD_VERSION, SIZE_KB, CATEGORY_NAME, 
-                CONTENT_PREVIEW, UPLOADED_TIME, EXTERNAL_VIRUS_SCAN_URL) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+                insert_query = """ INSERT INTO GAME (MOD_ID, MOD_NAME, MOD_DESC, MOD_VERSION, SIZE_KB, CATEGORY_NAME, 
+                CONTENT_PREVIEW, UPLOADED_TIME, EXTERNAL_VIRUS_SCAN_URL) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)""".replace("GAME", f"{game}")
                 record_to_insert = (f"{mod_id}.{n}", file['name'], file['description'], file['version'],
                                     file['size_kb'], file['category_name'], json.dumps(j), file['uploaded_time'],
                                     file['external_virus_scan_url'])
@@ -69,8 +69,8 @@ for mod_id in x:
         else:
             print(f"Mod gone, oh man :c:{r.status_code}")
     else:
-        insert_query = f""" INSERT INTO {game} (MOD_ID, MOD_NAME, MOD_DESC, MOD_VERSION, SIZE_KB, CATEGORY_NAME, 
-                        CONTENT_PREVIEW, UPLOADED_TIME, EXTERNAL_VIRUS_SCAN_URL) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+        insert_query = """ INSERT INTO GAME (MOD_ID, MOD_NAME, MOD_DESC, MOD_VERSION, SIZE_KB, CATEGORY_NAME, 
+                        CONTENT_PREVIEW, UPLOADED_TIME, EXTERNAL_VIRUS_SCAN_URL) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)""".replace("GAME", f"{game}")
         record_to_insert = (f"{mod_id}", html[html.find('>')+1:html.find('<', 2)], "", "0",
                             "0", "HIDDEN", None, None,
                             None)
