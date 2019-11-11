@@ -35,7 +35,7 @@ conn.commit()
 
 mods = {}
 
-x = range(501, 1001)
+x = range(1001, 1050)
 # x = range(100000, 100010)
 for mod_id in x:
     print(f"I'm on mod number: {mod_id}!")
@@ -51,20 +51,22 @@ for mod_id in x:
                 file = files[n]
                 j = json.loads(requests.get(file['content_preview_link']).content)
                 insert_query = """ INSERT INTO GAME (MOD_ID, MOD_NAME, MOD_DESC, MOD_VERSION, SIZE_KB, CATEGORY_NAME, 
-                CONTENT_PREVIEW, UPLOADED_TIME, EXTERNAL_VIRUS_SCAN_URL) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)""".replace("GAME", f"{game}")
+                CONTENT_PREVIEW, UPLOADED_TIME, EXTERNAL_VIRUS_SCAN_URL, FILE_ID) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                ON CONFLICT DO NOTHING""".replace("GAME", f"{game}")
                 record_to_insert = (f"{mod_id}.{n}", file['name'], file['description'], file['version'],
                                     file['size_kb'], file['category_name'], json.dumps(j), file['uploaded_time'],
-                                    file['external_virus_scan_url'])
+                                    file['external_virus_scan_url'], str(file['file_id']))
                 cursor.execute(insert_query, record_to_insert)
                 conn.commit()
-            # bfile_dict = {}
+            # file_dict = {}
             # for file in c['files']:
             #     mod_name = file['name']
             #     mod_description = file['description']
             #     links = []
             #     if file['category_id'] < 6:
             #         file_id = str(file['file_id'])
-            #         r = requests.get(f"https://api.nexusmods.com/v1/games/{game}/mods/{mod_id}/files/{file_id}/download_"
+            #         r = requests.get(f"https://api.nexusmods.com/v1/games/{game}/mods/{mod_id}/files/
+            #         {file_id}/download_"
             #                          f"link.json", headers=headers)
             #         c = json.loads(r.content)
             #         print("starting download")
@@ -86,10 +88,9 @@ for mod_id in x:
             print(f"Mod gone, oh man :c:{r.status_code}")
     else:
         insert_query = """ INSERT INTO GAME (MOD_ID, MOD_NAME, MOD_DESC, MOD_VERSION, SIZE_KB, CATEGORY_NAME, 
-                        CONTENT_PREVIEW, UPLOADED_TIME, EXTERNAL_VIRUS_SCAN_URL) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)""".replace("GAME", f"{game}")
+                        CONTENT_PREVIEW, UPLOADED_TIME, EXTERNAL_VIRUS_SCAN_URL, FILE_ID) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""".replace("GAME", f"{game}")
         record_to_insert = (f"{mod_id}", html[html.find('>')+1:html.find('<', 2)], "", "0",
-                            "0", "HIDDEN", None, None,
-                            None)
+                            "0", "HIDDEN", None, None, None, None)
         cursor.execute(insert_query, record_to_insert)
         conn.commit()
         print("Welp its hidden")
