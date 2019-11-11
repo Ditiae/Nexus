@@ -19,11 +19,13 @@ cursor = conn.cursor()
 
 mods = {}
 
-x = range(61, 100)
+x = range(1, 100)
 # x = range(100000, 100010)
 for mod_id in x:
     print(f"I'm on mod number: {mod_id}!")
-    if "Hidden mod" not in str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{game}/mods/{mod_id}").content).h3):
+    html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{game}/mods/{mod_id}").content).h3)
+    print(html[html.find('>')+1:html.find('<', 2)])
+    if any(x in html for x in ["Hidden mod", "Not Found"]):
         r = requests.get(f"https://api.nexusmods.com/v1/games/{game}/mods/{mod_id}/files.json", headers=headers)
         if r.status_code == 200:
             c = json.loads(r.content)
@@ -69,7 +71,7 @@ for mod_id in x:
     else:
         insert_query = f""" INSERT INTO {game} (MOD_ID, MOD_NAME, MOD_DESC, MOD_VERSION, SIZE_KB, CATEGORY_NAME, 
                         CONTENT_PREVIEW, UPLOADED_TIME, EXTERNAL_VIRUS_SCAN_URL) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-        record_to_insert = (f"{mod_id}", "Hidden Mod", "", "0",
+        record_to_insert = (f"{mod_id}", html[html.find('>')+1:html.find('<', 2)], "", "0",
                             "0", "HIDDEN", None, None,
                             None)
         cursor.execute(insert_query, record_to_insert)
