@@ -1,5 +1,7 @@
 <?php
 
+// 0x5444#8669
+
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
 
@@ -7,6 +9,10 @@ function e($msg, $code=400) {
   http_response_code($code);
   echo json_encode(array("status" => "error", "message" => $msg));
   die();
+}
+
+if($_SERVER['REQUEST_METHOD'] != "POST") {
+    e("Only POST requests allowed", $code=403);
 }
 
 require("../../../settings.inc");
