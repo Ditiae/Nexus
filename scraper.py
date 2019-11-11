@@ -36,7 +36,7 @@ for mod_id in x:
                     'file_id': file['file_id'],
                     'size_kb': file['size_kb'],
                     'category_name': file['category_name'],
-                    'content_preview': j,
+                    'content_preview': json.dumps(j),
                     'external_virus_scan_url': file['external_virus_scan_url'],
                     'key': AUTH_KEY
                 }
