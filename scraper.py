@@ -67,7 +67,7 @@ for mod_id in x:
         else:
             print(f"Mod gone, oh man :c:{r.status_code}")
     else:
-        insert_query = """ INSERT INTO mods (MOD_ID, MOD_NAME, MOD_DESC, MOD_VERSION, SIZE_KB, CATEGORY_NAME, 
+        insert_query = f""" INSERT INTO {game} (MOD_ID, MOD_NAME, MOD_DESC, MOD_VERSION, SIZE_KB, CATEGORY_NAME, 
                         CONTENT_PREVIEW, UPLOADED_TIME, EXTERNAL_VIRUS_SCAN_URL) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
         record_to_insert = (f"{mod_id}", "Hidden Mod", "", "0",
                             "0", "HIDDEN", None, None,
