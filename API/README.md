@@ -13,7 +13,7 @@ Params
  * `category_name`
  * `content_preview` (must be valid JSON)
  * `external_virus_scan_url`
- * `uploaded_time` (string)
+ * `uploaded_time` (must be int as timestamp)
  * `key` (Authentication key, required)
 
 Only POST requests are accepted.
