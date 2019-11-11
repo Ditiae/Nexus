@@ -13,13 +13,29 @@ headers = {'apikey': API_KEY,
 
 game = "skyrim"
 
+create_query ="""CREATE TABLE IF NOT EXISTS GAME
+(
+    mod_id text NOT NULL,
+    mod_name text NOT NULL,
+    mod_desc text,
+    mod_version text,
+    size_kb integer,
+    category_name text,
+    content_preview json,
+    uploaded_time date,
+    external_virus_scan_url text,
+    CONSTRAINT mods_pkey PRIMARY KEY (mod_id)
+)""".replace("GAME", f"{game}")
+
 conn = psycopg2.connect(host="localhost", port=5432, database="nexusmods", user="postgres", password=os.environ['DB_PASS'])
 
 cursor = conn.cursor()
+cursor.execute(create_query)
+conn.commit()
 
 mods = {}
 
-x = range(1, 150)
+x = range(501, 1001)
 # x = range(100000, 100010)
 for mod_id in x:
     print(f"I'm on mod number: {mod_id}!")
