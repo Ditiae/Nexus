@@ -18,13 +18,12 @@ headers = {
 
 mods = {}
 
-x = range(100000, 100192)
+x = range(1, 1000)
 for mod_id in x:
     print(f"\nI'm on mod number: {mod_id}!")
     html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{GAME}/mods/{mod_id}").content,
                              features="html.parser").h3)
     html = html[html.find('>') + 1:html.find('<', 2)]
-    print(html)
     if not any(x in html for x in ["Hidden mod", "Not found"]):
         r = requests.get(f"https://api.nexusmods.com/v1/games/{GAME}/mods/{mod_id}/files.json", headers=headers)
         reqs = f"API Reqs reamining: {r.headers['x-rl-daily-remaining']} | {r.headers['x-rl-hourly-remaining']}"
@@ -55,6 +54,7 @@ for mod_id in x:
         else:
             print(f"Mod gone, oh man :c :{r.status_code}")
     else:
+        print(html)
         params = {
             'mod_id': f'{mod_id}',
             'mod_name': html,
