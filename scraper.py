@@ -10,6 +10,7 @@ with open("settings.json") as f:
     AUTH_KEY = settings["auth_key"]
     API_URL = settings["api_url"]
     GAME = settings["game"]
+    range = range(settings["range"][0], settings["range"][1])
 
 headers = {
     'apikey': API_KEY,
@@ -18,13 +19,12 @@ headers = {
 
 mods = {}
 
-x = range(1, 1000)
-for mod_id in x:
+for mod_id in range:
     print(f"\nI'm on mod number: {mod_id}!")
     html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{GAME}/mods/{mod_id}").content,
                              features="html.parser").h3)
     html = html[html.find('>') + 1:html.find('<', 2)]
-    if not any(x in html for x in ["Hidden mod", "Not found"]):
+    if not any(x in html.lower() for x in ["hidden mod", "not found", "not published"]):
         r = requests.get(f"https://api.nexusmods.com/v1/games/{GAME}/mods/{mod_id}/files.json", headers=headers)
         reqs = f"API Reqs reamining: {r.headers['x-rl-daily-remaining']} | {r.headers['x-rl-hourly-remaining']}"
         if r.ok:
