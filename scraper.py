@@ -18,9 +18,9 @@ headers = {
 
 mods = {}
 
-x = range(1, 1000)
+x = range(100000, 100192)
 for mod_id in x:
-    print(f"I'm on mod number: {mod_id}!")
+    print(f"\nI'm on mod number: {mod_id}!")
     html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{GAME}/mods/{mod_id}").content,
                              features="html.parser").h3)
     html = html[html.find('>') + 1:html.find('<', 2)]
@@ -46,11 +46,11 @@ for mod_id in x:
                     'content_preview': json.dumps(j),
                     'uploaded_time': file['uploaded_timestamp'],
                     'external_virus_scan_url': file['external_virus_scan_url'],
-                    'adult_content': html == "Adult content",
+                    'adult_content': html == "Adult Content",
                     'key': AUTH_KEY
                 }
                 r = requests.post(API_URL, data=params)
-                print(f"{reqs} | {r.text}")
+                print(f"File upload | {reqs} | {r.text}")
 
         else:
             print(f"Mod gone, oh man :c :{r.status_code}")
