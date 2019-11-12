@@ -1,6 +1,11 @@
 import requests
 import json
 from bs4 import BeautifulSoup
+from loguru import logger
+
+# setup logging
+# to log an error to file, use logger.error("log message")
+logger.add("error.log", level="ERROR")
 
 # Load settings
 with open("settings.json") as f:
@@ -20,7 +25,7 @@ headers = {
 mods = {}
 
 for mod_id in checkrange:
-    print(f"\nI'm on mod number: {mod_id}!")
+    print(f"Mod number: {mod_id}!")
     html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{GAME}/mods/{mod_id}").content,
                              features="html.parser").h3)
     html = html[html.find('>') + 1:html.find('<', 2)]
@@ -49,10 +54,10 @@ for mod_id in checkrange:
                     'key': AUTH_KEY
                 }
                 r = requests.post(API_URL, data=params)
-                print(f"File upload | {reqs} | {r.text}")
+                logger.error(f"Database request | {reqs} | {r.text}")
 
         else:
-            print(f"Mod gone, oh man :c :{r.status_code}")
+            logger.error(f"Mod gone, oh man :c :{r.status_code}")
     else:
         print(html)
         params = {

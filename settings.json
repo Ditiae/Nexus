@@ -1,7 +1,7 @@
 {
-    "api_key": "Replace this with actual Nexus Mods API key",
-    "auth_key": "Replace this with actual internal API auth key and rename this file to settings.json",
+    "api_key": "NElWUmoxVjFqd2dNSEc1S1ZqV1Q5dEp6Tm9lbE13QVpCQVNxb2lvV2pZK2JZeEVyaEZhV2JkTmdTWWNHanZVRi0tVW10emlZK1VRYStQRnlhK1FtTkJJZz09--44f8f43c7ab11a10eadf9f80a53213d4b13acfb4",
+    "auth_key": "59e7ec185d48a30e67643b5bbcb6a25a",
     "api_url": "https://arch.tdpain.net/api/nexusmod/create/",
     "game": "skyrim",
-    "range": [1, 1000]
+    "range": [100000, 100193]
 }
