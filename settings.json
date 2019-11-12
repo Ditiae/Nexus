@@ -1,0 +1,6 @@
+{
+    "api_key": "Replace this with actual Nexus Mods API key",
+    "auth_key": "Replace this with actual internal API auth key",
+    "api_url": "https://arch.tdpain.net/api/nexusmod/create/",
+    "game": "skyrim"
+}

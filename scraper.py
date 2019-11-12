@@ -3,25 +3,32 @@ import json
 import os
 from bs4 import BeautifulSoup
 
-API_KEY = os.environ['API_KEY']
-AUTH_KEY = os.environ['AUTH_KEY']
-api_url = "https://arch.tdpain.net/api/nexusmod/create/"
+# Load settings
+with open("settings.json") as f:
+    settings = json.load(f)
 
-headers = {'apikey': API_KEY,
-           'accept': 'applications/json'}
+    API_KEY = settings["api_key"]
+    AUTH_KEY = settings["auth_key"]
+    API_URL = settings["api_url"]
+    GAME = settings["game"]
 
-game = "skyrim"
+
+headers = {
+    'apikey': API_KEY,
+    'accept': 'applications/json'
+}
+
 
 mods = {}
 
 x = range(0, 1000)
 for mod_id in x:
     print(f"I'm on mod number: {mod_id}!")
-    html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{game}/mods/{mod_id}").content).h3)
+    html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{GAME}/mods/{mod_id}").content).h3)
     html = html[html.find('>') + 1:html.find('<', 2)]
     print(html)
     if not any(x in html for x in ["Hidden mod", "Not found"]):
-        r = requests.get(f"https://api.nexusmods.com/v1/games/{game}/mods/{mod_id}/files.json", headers=headers)
+        r = requests.get(f"https://api.nexusmods.com/v1/games/{GAME}/mods/{mod_id}/files.json", headers=headers)
         if r.ok:
             c = json.loads(r.content)
             files = c['files']
@@ -42,7 +49,7 @@ for mod_id in x:
                     'external_virus_scan_url': file['external_virus_scan_url'],
                     'key': AUTH_KEY
                 }
-                print(requests.post(api_url, data=params).text)
+                print(requests.post(API_URL, data=params).text)
 
         else:
             print(f"Mod gone, oh man :c:{r.status_code}")
@@ -60,7 +67,7 @@ for mod_id in x:
             'external_virus_scan_url': "",
             'key': AUTH_KEY
         }
-        print(requests.post(api_url, data=params).text)
+        print(requests.post(API_URL, data=params).text)
 
         # file_dict = {}
         # for file in c['files']:
@@ -69,7 +76,7 @@ for mod_id in x:
         #     links = []
         #     if file['category_id'] < 6:
         #         file_id = str(file['file_id'])
-        #         r = requests.get(f"https://api.nexusmods.com/v1/games/{game}/mods/{mod_id}/files/
+        #         r = requests.get(f"https://api.nexusmods.com/v1/games/{GAME}/mods/{mod_id}/files/
         #         {file_id}/download_"
         #                          f"link.json", headers=headers)
         #         c = json.loads(r.content)
