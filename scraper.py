@@ -10,7 +10,7 @@ with open("settings.json") as f:
     AUTH_KEY = settings["auth_key"]
     API_URL = settings["api_url"]
     GAME = settings["game"]
-    range = range(settings["range"][0], settings["range"][1])
+    checkrange = range(settings["range"][0], settings["range"][1])
 
 headers = {
     'apikey': API_KEY,
@@ -19,7 +19,7 @@ headers = {
 
 mods = {}
 
-for mod_id in range:
+for mod_id in checkrange:
     print(f"\nI'm on mod number: {mod_id}!")
     html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{GAME}/mods/{mod_id}").content,
                              features="html.parser").h3)
