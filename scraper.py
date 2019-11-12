@@ -46,7 +46,7 @@ for mod_id in x:
                     'content_preview': json.dumps(j),
                     'uploaded_time': file['uploaded_timestamp'],
                     'external_virus_scan_url': file['external_virus_scan_url'],
-                    'adult_content': html == "Adult Content",
+                    'adult_content': html.lower() == "adult content",
                     'key': AUTH_KEY
                 }
                 r = requests.post(API_URL, data=params)
