@@ -18,7 +18,7 @@ headers = {
 
 mods = {}
 
-x = range(5000, 6000)
+x = range(1, 1000)
 for mod_id in x:
     print(f"I'm on mod number: {mod_id}!")
     html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{GAME}/mods/{mod_id}").content,
@@ -46,7 +46,7 @@ for mod_id in x:
                     'content_preview': json.dumps(j),
                     'uploaded_time': file['uploaded_timestamp'],
                     'external_virus_scan_url': file['external_virus_scan_url'],
-                    'adult_content': html == "Adult Content",
+                    'adult_content': html == "Adult content",
                     'key': AUTH_KEY
                 }
                 r = requests.post(API_URL, data=params)
