@@ -6,8 +6,8 @@ https://arch.tdpain.net/api/nexusmod/create/ - Only POST requests are accepted.
 
 #### Params
 
- * `mod_id` (required and can be a number with a decimal point)
- * `mod_name` (required)
+ * `mod_id` (**required** and can be a number with a decimal point)
+ * `mod_name` (**required**)
  * `mod_desc`
  * `mod_version`
  * `file_id` (must be integer if specified in request)
