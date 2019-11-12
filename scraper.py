@@ -1,30 +1,37 @@
 import requests
 import json
-import os
 from bs4 import BeautifulSoup
 
-API_KEY = os.environ['API_KEY']
-AUTH_KEY = os.environ['AUTH_KEY']
-api_url = "https://arch.tdpain.net/api/nexusmod/create/"
+# Load settings
+with open("settings.json") as f:
+    settings = json.load(f)
 
-headers = {'apikey': API_KEY,
-           'accept': 'applications/json'}
+    API_KEY = settings["api_key"]
+    AUTH_KEY = settings["auth_key"]
+    API_URL = settings["api_url"]
+    GAME = settings["game"]
 
-game = "skyrim"
+headers = {
+    'apikey': API_KEY,
+    'accept': 'applications/json'
+}
 
 mods = {}
 
-x = range(10, 20)
+x = range(5000, 6000)
 for mod_id in x:
     print(f"I'm on mod number: {mod_id}!")
-    html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{game}/mods/{mod_id}").content).h3)
-    print(html[html.find('>') + 1:html.find('<', 2)])
-    if not any(x in html for x in ["Hidden mod", "Not Found"]):
-        r = requests.get(f"https://api.nexusmods.com/v1/games/{game}/mods/{mod_id}/files.json", headers=headers)
+    html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{GAME}/mods/{mod_id}").content,
+                             features="html.parser").h3)
+    html = html[html.find('>') + 1:html.find('<', 2)]
+    print(html)
+    if not any(x in html for x in ["Hidden mod", "Not found"]):
+        r = requests.get(f"https://api.nexusmods.com/v1/games/{GAME}/mods/{mod_id}/files.json", headers=headers)
+        reqs = f"API Reqs reamining: {r.headers['x-rl-daily-remaining']} | {r.headers['x-rl-hourly-remaining']}"
         if r.ok:
             c = json.loads(r.content)
             files = c['files']
-            x = range(1, len(files))
+            x = range(0, len(files))
             for n in x:
                 file = files[n]
                 j = json.loads(requests.get(file['content_preview_link']).content)
@@ -37,14 +44,31 @@ for mod_id in x:
                     'size_kb': file['size_kb'],
                     'category_name': file['category_name'],
                     'content_preview': json.dumps(j),
+                    'uploaded_time': file['uploaded_timestamp'],
                     'external_virus_scan_url': file['external_virus_scan_url'],
                     'key': AUTH_KEY
                 }
-                requests.post(api_url, params=params)
+                r = requests.post(API_URL, data=params)
+                print(f"{reqs} | {r.text}")
+
         else:
-            print(f"Mod gone, oh man :c:{r.status_code}")
+            print(f"Mod gone, oh man :c :{r.status_code}")
     else:
-        print("Welp its hidden")
+        params = {
+            'mod_id': f'{mod_id}',
+            'mod_name': html,
+            'mod_desc': "",
+            'mod_version': "0",
+            'file_id': 1,
+            'size_kb': 1,
+            'category_name': html.capitalize(),
+            'content_preview': "{}",
+            'uploaded_time': 1,
+            'external_virus_scan_url': "",
+            'key': AUTH_KEY
+        }
+        r = requests.post(API_URL, data=params)
+        print(f"{r.text}")
 
         # file_dict = {}
         # for file in c['files']:
@@ -53,7 +77,7 @@ for mod_id in x:
         #     links = []
         #     if file['category_id'] < 6:
         #         file_id = str(file['file_id'])
-        #         r = requests.get(f"https://api.nexusmods.com/v1/games/{game}/mods/{mod_id}/files/
+        #         r = requests.get(f"https://api.nexusmods.com/v1/games/{GAME}/mods/{mod_id}/files/
         #         {file_id}/download_"
         #                          f"link.json", headers=headers)
         #         c = json.loads(r.content)
