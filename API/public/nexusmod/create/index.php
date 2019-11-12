@@ -38,10 +38,10 @@ foreach ($fields as $name) {
   $valstring .= "{$name},";
   $markstring .= "?,";
 }
-$valstring = substr($valstring, 0, -1);
+$valstring = substr($valstring, 0, -1);  // remove extra comma from each
 $markstring = substr($markstring, 0, -1);
 
-// check none null fields
+// check no null fields
 $cannot_be_empty = ["mod_id", "mod_name", "file_id", "size_kb"];
 foreach ($cannot_be_empty as $name) {
   if (empty($_POST[$name])) {
@@ -59,7 +59,7 @@ foreach ($fields as $name) {
 }
 
 // check integers
-$fields_with_integers = ["file_id", "size_kb"];
+$fields_with_integers = ["file_id", "size_kb", "uploaded_time"];
 foreach ($fields_with_integers as $name) {
   if ((!ctype_digit($inputs[$name])) || (strpos($inputs[$name], ".") !== false)) {
     e("{$name} can only be an integer");
@@ -80,10 +80,9 @@ if (json_last_error() != JSON_ERROR_NONE) {
 $sqlstr = "INSERT INTO skyrim ({$valstring}) VALUES ({$markstring})";
 
 $sql = $conn->prepare($sqlstr);
-$sql->bind_param("ssssssss", $inputs["mod_id"], $inputs["mod_name"], $inputs["mod_desc"], $inputs["mod_version"], $inputs["file_id"], $inputs["size_kb"], $inputs["category_name"], $inputs["content_preview"], $input["uploaded_time"],  $inputs["external_virus_scan_url"]);
+$sql->bind_param("ssssssssss", $inputs["mod_id"], $inputs["mod_name"], $inputs["mod_desc"], $inputs["mod_version"], $inputs["file_id"], $inputs["size_kb"], $inputs["category_name"], $inputs["content_preview"], $inputs["uploaded_time"],  $inputs["external_virus_scan_url"]);
 
 $sql->execute();
 $sql->close();
-
 
 echo json_encode(array("status" => "ok", "message" => "Success!"));
