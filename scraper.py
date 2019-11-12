@@ -14,17 +14,18 @@ game = "skyrim"
 
 mods = {}
 
-x = range(10, 20)
+x = range(0, 1000)
 for mod_id in x:
     print(f"I'm on mod number: {mod_id}!")
     html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{game}/mods/{mod_id}").content).h3)
-    print(html[html.find('>') + 1:html.find('<', 2)])
-    if not any(x in html for x in ["Hidden mod", "Not Found"]):
+    html = html[html.find('>') + 1:html.find('<', 2)]
+    print(html)
+    if not any(x in html for x in ["Hidden mod", "Not found"]):
         r = requests.get(f"https://api.nexusmods.com/v1/games/{game}/mods/{mod_id}/files.json", headers=headers)
         if r.ok:
             c = json.loads(r.content)
             files = c['files']
-            x = range(1, len(files))
+            x = range(0, len(files))
             for n in x:
                 file = files[n]
                 j = json.loads(requests.get(file['content_preview_link']).content)
@@ -37,14 +38,29 @@ for mod_id in x:
                     'size_kb': file['size_kb'],
                     'category_name': file['category_name'],
                     'content_preview': json.dumps(j),
+                    'uploaded_time': file['uploaded_timestamp'],
                     'external_virus_scan_url': file['external_virus_scan_url'],
                     'key': AUTH_KEY
                 }
-                requests.post(api_url, params=params)
+                print(requests.post(api_url, data=params).text)
+
         else:
             print(f"Mod gone, oh man :c:{r.status_code}")
     else:
-        print("Welp its hidden")
+        params = {
+            'mod_id': f'{mod_id}',
+            'mod_name': html,
+            'mod_desc': "",
+            'mod_version': "0",
+            'file_id': 1,
+            'size_kb': 1,
+            'category_name': html.capitalize(),
+            'content_preview': "{}",
+            'uploaded_time': 1,
+            'external_virus_scan_url': "",
+            'key': AUTH_KEY
+        }
+        print(requests.post(api_url, data=params).text)
 
         # file_dict = {}
         # for file in c['files']:
