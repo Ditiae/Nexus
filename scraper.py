@@ -46,6 +46,7 @@ for mod_id in x:
                     'content_preview': json.dumps(j),
                     'uploaded_time': file['uploaded_timestamp'],
                     'external_virus_scan_url': file['external_virus_scan_url'],
+                    'adult_content': html == "Adult Content",
                     'key': AUTH_KEY
                 }
                 r = requests.post(API_URL, data=params)
@@ -59,12 +60,13 @@ for mod_id in x:
             'mod_name': html,
             'mod_desc': "",
             'mod_version': "0",
-            'file_id': 1,
-            'size_kb': 1,
-            'category_name': html.capitalize(),
+            'file_id': None,
+            'size_kb': None,
+            'category_name': html.upper(),
             'content_preview': "{}",
-            'uploaded_time': 1,
+            'uploaded_time': None,
             'external_virus_scan_url': "",
+            'adult_content': False,
             'key': AUTH_KEY
         }
         r = requests.post(API_URL, data=params)
