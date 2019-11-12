@@ -1,6 +1,5 @@
 import requests
 import json
-import os
 from bs4 import BeautifulSoup
 
 # Load settings
@@ -12,23 +11,23 @@ with open("settings.json") as f:
     API_URL = settings["api_url"]
     GAME = settings["game"]
 
-
 headers = {
     'apikey': API_KEY,
     'accept': 'applications/json'
 }
 
-
 mods = {}
 
-x = range(0, 1000)
+x = range(5000, 6000)
 for mod_id in x:
     print(f"I'm on mod number: {mod_id}!")
-    html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{GAME}/mods/{mod_id}").content).h3)
+    html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{GAME}/mods/{mod_id}").content,
+                             features="html.parser").h3)
     html = html[html.find('>') + 1:html.find('<', 2)]
     print(html)
     if not any(x in html for x in ["Hidden mod", "Not found"]):
         r = requests.get(f"https://api.nexusmods.com/v1/games/{GAME}/mods/{mod_id}/files.json", headers=headers)
+        reqs = f"API Reqs reamining: {r.headers['x-rl-daily-remaining']} | {r.headers['x-rl-hourly-remaining']}"
         if r.ok:
             c = json.loads(r.content)
             files = c['files']
@@ -49,10 +48,11 @@ for mod_id in x:
                     'external_virus_scan_url': file['external_virus_scan_url'],
                     'key': AUTH_KEY
                 }
-                print(requests.post(API_URL, data=params).text)
+                r = requests.post(API_URL, data=params)
+                print(f"{reqs} | {r.text}")
 
         else:
-            print(f"Mod gone, oh man :c:{r.status_code}")
+            print(f"Mod gone, oh man :c :{r.status_code}")
     else:
         params = {
             'mod_id': f'{mod_id}',
@@ -67,7 +67,8 @@ for mod_id in x:
             'external_virus_scan_url': "",
             'key': AUTH_KEY
         }
-        print(requests.post(API_URL, data=params).text)
+        r = requests.post(API_URL, data=params)
+        print(f"{r.text}")
 
         # file_dict = {}
         # for file in c['files']:
