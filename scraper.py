@@ -40,7 +40,7 @@ def parse_api_time(date):
 
 def waitforapirequests(hourlyreset):
     delta = (parse_api_time(hourlyreset) - datetime.timestamp(datetime.now())) + 60
-    while delta > 5:
+    while delta > 0:
         print(f"\rWaiting {int(delta)} seconds for api requests to reset...", end="")
         delta = delta - 15
         time.sleep(15)
