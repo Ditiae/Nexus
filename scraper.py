@@ -1,3 +1,5 @@
+import time
+from datetime import datetime
 import requests
 import json
 from bs4 import BeautifulSoup
@@ -24,6 +26,23 @@ headers = {
 
 mods = {}
 
+
+def parse_api_time(date):
+    s = date.split(":")
+    s[-2] = s[-2] + s[-1]
+    s.pop(-1)
+    date = ""
+    for i in s:
+        date += i + ":"
+    date = date[:-1]
+    return datetime.timestamp(datetime.strptime(date, '%Y-%m-%dT%H:%M:%S%z'))
+
+def waitforapirequests(dreset, hreset):
+    delta = parse_api_time(hreset) - datetime.timestamp(datetime.now)
+    print(f"Waiting {delta} seconds for api requests to reset...")
+    time.sleep(delta)
+
+
 for mod_id in checkrange:
     print(f"Mod number: {mod_id}!")
     html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{GAME}/mods/{mod_id}").content,
@@ -31,7 +50,11 @@ for mod_id in checkrange:
     html = html[html.find('>') + 1:html.find('<', 2)]
     if not any(x in html.lower() for x in ["hidden mod", "not found", "not published"]):
         r = requests.get(f"https://api.nexusmods.com/v1/games/{GAME}/mods/{mod_id}/files.json", headers=headers)
-        reqs = f"API Reqs reamining: {r.headers['x-rl-daily-remaining']} | {r.headers['x-rl-hourly-remaining']}"
+        dreqs = r.headers['x-rl-daily-remaining']
+        dreset = r.headers['x-rl-daily-reset']
+        hreqs = r.headers['x-rl-hourly-remaining']
+        hreset = r.headers['x-rl-hourly-reset']
+        reqs = f"API Reqs reamining: {dreqs} | {hreqs}"
         if r.ok:
             c = json.loads(r.content)
             files = c['files']
@@ -55,7 +78,8 @@ for mod_id in checkrange:
                 }
                 r = requests.post(API_URL, data=params)
                 logger.error(f"Database request | {reqs} | {r.text}")
-
+                if (dreqs < 1) and (hreqs < 1):
+                    waitforapirequests(dreset, hreset)
         else:
             logger.error(f"Mod gone, oh man :c :{r.status_code}")
     else:
