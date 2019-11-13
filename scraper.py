@@ -47,7 +47,7 @@ def waitforapirequests(hourlyreset):
 
 
 for mod_id in checkrange:
-    print(f"Mod number: {mod_id}!")
+    print(f"\nMod number: {mod_id}!")
     html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{GAME}/mods/{mod_id}").content,
                              features="html.parser").h3)
     html = html[html.find('>') + 1:html.find('<', 2)]
