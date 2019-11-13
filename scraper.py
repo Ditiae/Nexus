@@ -61,30 +61,60 @@ with logger.catch():
             if r.ok:
                 c = json.loads(r.content)
                 files = c['files']
-                x = range(0, len(files))
-                for n in x:
-                    file = files[n]
-                    j = json.loads(requests.get(file['content_preview_link']).content)
-                    params = {
-                        'mod_id': f'{mod_id}.{n}',
-                        'mod_name': file['name'],
-                        'mod_desc': file['description'],
-                        'mod_version': file['version'],
-                        'file_id': file['file_id'],
-                        'size_kb': file['size_kb'],
-                        'category_name': file['category_name'],
-                        'content_preview': json.dumps(j),
-                        'uploaded_time': file['uploaded_timestamp'],
-                        'external_virus_scan_url': file['external_virus_scan_url'],
-                        'adult_content': html.lower() == "adult content",
+
+                if len(files) == 0:
+                    print("This mod has no files")
+                    r = requests.get(f"https://api.nexusmods.com/v1/games/{GAME}/mods/{mod_id}.json", headers=headers)
+
+                    dreqs = r.headers['x-rl-daily-remaining']
+                    hreqs = r.headers['x-rl-hourly-remaining']
+                    hreset = r.headers['x-rl-hourly-reset']
+                    reqs = f"API Reqs reamining: {dreqs} | {hreqs}"
+                    
+                    if r.ok:
+                        j = r.json()
+                        
+                        params = {
+                        'mod_id': f'{mod_id}',
+                        'mod_name': j["name"],
+                        'mod_desc': "THIS MOD HAS NO FILES - " + j['summary'],
+                        'mod_version': "0",
+                        'category_name': "NO FILES",
+                        'content_preview': "{}",
+                        'adult_content': False,
                         'key': AUTH_KEY
-                    }
-                    r = requests.post(API_URL, data=params)
-                    if not r.ok:
-                        logger.error(f"Database request | {mod_id} | {reqs} | {r.text}")
-                    print(f"Database request | {reqs} | {r.text}")
-                    if (int(dreqs) < 5) and (int(hreqs) < 5):
-                        waitforapirequests(hreset)
+                        }
+
+                        r = requests.post(API_URL, data=params)
+
+                        print(f"Database request | {reqs} | {r.text}")
+                        
+                else:
+                    x = range(0, len(files))
+                    for n in x:
+                        file = files[n]
+                        j = json.loads(requests.get(file['content_preview_link']).content)
+                        params = {
+                            'mod_id': f'{mod_id}.{n}',
+                            'mod_name': file['name'],
+                            'mod_desc': file['description'],
+                            'mod_version': file['version'],
+                            'file_id': file['file_id'],
+                            'size_kb': file['size_kb'],
+                            'category_name': file['category_name'],
+                            'content_preview': json.dumps(j),
+                            'uploaded_time': file['uploaded_timestamp'],
+                            'external_virus_scan_url': file['external_virus_scan_url'],
+                            'adult_content': html.lower() == "adult content",
+                            'key': AUTH_KEY
+                        }
+                        r = requests.post(API_URL, data=params)
+                        if not r.ok:
+                            logger.error(f"Database request | {mod_id} | {reqs} | {r.text}")
+                        print(f"Database request | {reqs} | {r.text}")
+                        if (int(dreqs) < 5) and (int(hreqs) < 5):
+                            waitforapirequests(hreset)
+                            
             else:
                 logger.error(f"Mod gone, oh man :c : {r.text}")
         else:
