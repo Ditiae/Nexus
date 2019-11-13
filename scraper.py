@@ -37,7 +37,8 @@ def parse_api_time(date):
     date = date[:-1]
     return datetime.timestamp(datetime.strptime(date, '%Y-%m-%dT%H:%M:%S%z'))
 
-def waitforapirequests(dreset, hreset):
+
+def waitforapirequests(hreset):
     delta = parse_api_time(hreset) - datetime.timestamp(datetime.now)
     print(f"Waiting {delta} seconds for api requests to reset...")
     time.sleep(delta)
@@ -51,7 +52,6 @@ for mod_id in checkrange:
     if not any(x in html.lower() for x in ["hidden mod", "not found", "not published"]):
         r = requests.get(f"https://api.nexusmods.com/v1/games/{GAME}/mods/{mod_id}/files.json", headers=headers)
         dreqs = r.headers['x-rl-daily-remaining']
-        dreset = r.headers['x-rl-daily-reset']
         hreqs = r.headers['x-rl-hourly-remaining']
         hreset = r.headers['x-rl-hourly-reset']
         reqs = f"API Reqs reamining: {dreqs} | {hreqs}"
@@ -79,7 +79,7 @@ for mod_id in checkrange:
                 r = requests.post(API_URL, data=params)
                 logger.error(f"Database request | {reqs} | {r.text}")
                 if (dreqs < 1) and (hreqs < 1):
-                    waitforapirequests(dreset, hreset)
+                    waitforapirequests(hreset)
         else:
             logger.error(f"Mod gone, oh man :c :{r.status_code}")
     else:
