@@ -80,7 +80,7 @@ for mod_id in checkrange:
                 if not r.ok:
                     logger.error(f"Database request | {mod_id} | {reqs} | {r.text}")
                 print(f"Database request | {reqs} | {r.text}")
-                if (int(dreqs) < 1) and (int(hreqs) < 1):
+                if (int(dreqs) < 5) and (int(hreqs) < 5):
                     waitforapirequests(hreset)
         else:
             logger.error(f"Mod gone, oh man :c : {r.text}")
