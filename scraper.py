@@ -38,8 +38,8 @@ def parse_api_time(date):
     return datetime.timestamp(datetime.strptime(date, '%Y-%m-%dT%H:%M:%S%z'))
 
 
-def waitforapirequests(hreset):
-    delta = parse_api_time(hreset) - datetime.timestamp(datetime.now)
+def waitforapirequests(hourlyreset):
+    delta = parse_api_time(hourlyreset) - datetime.timestamp(datetime.now)
     print(f"Waiting {delta} seconds for api requests to reset...")
     time.sleep(delta)
 
@@ -77,6 +77,8 @@ for mod_id in checkrange:
                     'key': AUTH_KEY
                 }
                 r = requests.post(API_URL, data=params)
+                if not r.ok:
+                    logger.error(f"Database request | {reqs} | {r.text}")
                 print(f"Database request | {reqs} | {r.text}")
                 if (int(dreqs) < 1) and (int(hreqs) < 1):
                     waitforapirequests(hreset)
