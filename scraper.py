@@ -78,7 +78,7 @@ for mod_id in checkrange:
                 }
                 r = requests.post(API_URL, data=params)
                 logger.error(f"Database request | {reqs} | {r.text}")
-                if (dreqs < 1) and (hreqs < 1):
+                if (int(dreqs) < 1) and (int(hreqs) < 1):
                     waitforapirequests(hreset)
         else:
             logger.error(f"Mod gone, oh man :c :{r.status_code}")
