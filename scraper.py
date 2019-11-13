@@ -78,7 +78,7 @@ for mod_id in checkrange:
                 }
                 r = requests.post(API_URL, data=params)
                 if not r.ok:
-                    logger.error(f"Database request | {reqs} | {r.text}")
+                    logger.error(f"Database request | {mod_id} | {reqs} | {r.text}")
                 print(f"Database request | {reqs} | {r.text}")
                 if (int(dreqs) < 1) and (int(hreqs) < 1):
                     waitforapirequests(hreset)
