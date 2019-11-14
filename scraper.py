@@ -53,7 +53,12 @@ with logger.catch():
     def waitforapirequests(hourlyreset):
         delta = (parse_api_time(hourlyreset) - datetime.timestamp(datetime.now())) + 60
         while delta > 0:
-            print(f"\rWaiting {int(delta)} seconds ({int(int(delta / 60))} minutes) for api requests to reset...",
+            if int(delta / 60) < 1:
+                p = f"{int(delta)} seconds"
+            else:
+                p = f"{int(delta / 60)} minutes"
+
+            print(f"\rWaiting {p} for api requests to reset...",
                   end="")
             delay = 15
             delta -= delay
@@ -83,7 +88,7 @@ with logger.catch():
                 CURRENT_API_KEY = next_key
                 headers["apikey"] = API_KEY
 
-                if API_KEYS[CURRENT_API_KEY][1] is not None:
+                if API_KEYS[CURRENT_API_KEY][1] is not None and ((daily < 5) and (hourly < 5)):
                     waitforapirequests(API_KEYS[CURRENT_API_KEY][1])
 
             else:
@@ -158,7 +163,13 @@ with logger.catch():
                         check_api_ratelimits(dreqs, hreqs, hreset)
 
             else:
-                logger.error(f"Mod gone, oh man :c : {r.text}")
+                try:
+                    if "too many requests" in r.json()["msg"].lower():  # check for the ratelimit being completely saturated
+                        check_api_ratelimits(0, 0, r.headers["x-rl-hourly-reset"])
+                    else:
+                        logger.error(f"Mod gone, oh man :c : {r.text}")
+                except json.decoder.JSONDecodeError:
+                    logger.error(f"Mod gone, oh man :c : {r.text}")
         else:
             print(html)
             params = {
