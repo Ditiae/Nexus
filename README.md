@@ -13,5 +13,3 @@ Otherwise, just put one API key in like this:
 ```json
 "api-key": "api key one"
 ```
-
-1
