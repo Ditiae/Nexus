@@ -111,25 +111,25 @@ with logger.catch():
                     hreqs = int(r.headers['x-rl-hourly-remaining'])
                     hreset = r.headers['x-rl-hourly-reset']
                     reqs = f"API Reqs reamining: {dreqs} | {hreqs}"
-                    
+
                     if r.ok:
                         j = r.json()
-                        
+
                         params = {
-                        'mod_id': f'{mod_id}',
-                        'mod_name': j["name"],
-                        'mod_desc': "THIS MOD HAS NO FILES - " + j['summary'],
-                        'mod_version': "0",
-                        'category_name': "NO FILES",
-                        'content_preview': "{}",
-                        'adult_content': False,
-                        'key': AUTH_KEY
+                            'mod_id': f'{mod_id}',
+                            'mod_name': j["name"],
+                            'mod_desc': "THIS MOD HAS NO FILES - " + j['summary'],
+                            'mod_version': "0",
+                            'category_name': "NO FILES",
+                            'content_preview': "{}",
+                            'adult_content': False,
+                            'key': AUTH_KEY
                         }
 
                         r = requests.post(API_URL, data=params)
 
                         print(f"Database request | {reqs} | {r.text}")
-                        
+
                 else:
                     x = range(0, len(files))
                     for n in x:
@@ -153,9 +153,8 @@ with logger.catch():
                         if not r.ok:
                             logger.error(f"Database request | {mod_id} | {reqs} | {r.text}")
                         print(f"Database request | {reqs} | {r.text}")
-                        
                         check_api_ratelimits(dreqs, hreqs, hreset)
-                            
+
             else:
                 logger.error(f"Mod gone, oh man :c : {r.text}")
         else:
