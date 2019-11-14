@@ -13,3 +13,4 @@
 settings.inc
 settings.json
 error.log
+__pycache__\*
