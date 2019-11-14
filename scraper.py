@@ -83,7 +83,8 @@ with logger.catch():
                 CURRENT_API_KEY = next_key
                 headers["apikey"] = API_KEY
 
-                waitforapirequests(API_KEYS[CURRENT_API_KEY][1])
+                if API_KEYS[CURRENT_API_KEY][1] is not None:
+                    waitforapirequests(API_KEYS[CURRENT_API_KEY][1])
 
             else:
                 waitforapirequests(hreset)
