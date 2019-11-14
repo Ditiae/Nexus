@@ -30,6 +30,7 @@ def new_url(url):
 def press_vortx():
     pyautogui.moveTo(vortx_down)
     pyautogui.click()
+    """ # would copy new URL to clipboard
     time.sleep(1.5)
     pyautogui.moveTo(addr_bar)
     pyautogui.click()
@@ -40,7 +41,7 @@ def press_vortx():
     pyautogui.press("c")
     pyautogui.keyUp("ctrl")
     pyautogui.press("esc")
-
+    """
 
 for i in range(26079, 26082):
 
@@ -64,7 +65,20 @@ for i in range(26079, 26082):
 
     print("Taking link")
     press_vortx()
-    links[url] = clip.paste()
+    counter = 0
+    previous_content = ""
+    while True:
+        counter += 1
+        print(f"\rWaiting for link handler ({counter})", end="")
+        with open("share") as f:
+            f_content = f.read()
+            if f_content != previous_content:
+                previous_content = f_content
+                links[url] = f_content
+                break
+
+    time.sleep(0.2)
+
     print(f"Got link ({links[url]}")
 
 print("\n\n\n")
