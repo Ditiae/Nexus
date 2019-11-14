@@ -1,16 +1,21 @@
-.idea\*
+### Pycharm ###
+# Ignores the whole .idea folder and all .iml files
+# See https://github.com/joeblau/gitignore.io/issues/186 and https://github.com/joeblau/gitignore.io/issues/360
+
+.idea/
+
+# Reason: https://github.com/joeblau/gitignore.io/issues/186#issuecomment-249601023
+
+*.iml
+modules.xml
 .idea/misc.xml
-.idea/modules.xml
-.idea/Nexus.iml
-.idea/vcs.xml
-.idea/inspectionProfiles/profiles_settings.xml
-.idea/workspace.xml
-.idea/sqldialects.xml
-*.xml
-*.meta
-.idea/dataSources/e52d5178-b603-490e-acb3-6beb99b4584a/storage_v2/_src_/database/nexusmods.MPZYSw/schema/pg_catalog.0S1ZNQ.zip
+*.ipr
+
+### Python specific ###
+__pycache__/
+
+### Custom stuff ###
 
 settings.inc
 settings.json
 error.log
-__pycache__\*
