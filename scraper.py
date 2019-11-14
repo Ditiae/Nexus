@@ -21,15 +21,18 @@ with logger.catch():
         checkrange = range(settings["range"][0], settings["range"][1])
 
     API_KEY = settings["api_key"]
-    if (type(API_KEYS) == str) or ((len(API_KEYS) > 1) and (type(API_KEYS) == str)):
+    if (type(API_KEYS) == str) or ((len(API_KEYS) == 1) and (type(API_KEYS) == list)):  # if the API keys entry in the
+        # settings is a string or a list with length of one
         API_KEY = API_KEYS if (type(API_KEYS == str)) else API_KEYS[0]
-        CURRENT_API_KEY = None
-    else:
-        CURRENT_API_KEY = 0
+        CURRENT_API_KEY = None  # so it can be determined if multiple API keys are availble
+    else:  # there is a list of keys
+        CURRENT_API_KEY = 0  # start with the first provided key (CURRENT_API_KEY is a list index)
         API_KEY = API_KEYS[CURRENT_API_KEY]
 
-    if CURRENT_API_KEY is not None:
-        API_KEYS = [[k, None] for k in API_KEYS]
+    if CURRENT_API_KEY is not None:  # if there are mulyiple keys
+        API_KEYS = [[k, None] for k in API_KEYS]  # make API_KEYS a list in format [[key, None], [key2, None], ...]
+        # None will be replaced with the time when the ratelimit resets for that specific key. Signifies if that key
+        # has been used or not.
 
     headers = {
         'apikey': API_KEY,
@@ -72,22 +75,27 @@ with logger.catch():
 
         if (daily < 5) and (hourly < 5):
 
-            if CURRENT_API_KEY is not None:
+            if CURRENT_API_KEY is not None:  # if there are multiple keys
 
                 # switch API key
 
-                API_KEYS[CURRENT_API_KEY][1] = hreset
+                API_KEYS[CURRENT_API_KEY][1] = hreset  # store the reset time of the current key in use
 
+                # determine the next key to use
                 next_key = CURRENT_API_KEY + 1
                 if next_key > len(API_KEYS) - 1:
                     next_key = 0
 
                 print(f"\nAPI ratelimit reached for key {CURRENT_API_KEY}, switching to key {next_key}.\n")
 
-                API_KEY = API_KEYS[next_key][0]
-                CURRENT_API_KEY = next_key
-                headers["apikey"] = API_KEY
+                API_KEY = API_KEYS[next_key][0]  # sets API_KEY to the next key
+                CURRENT_API_KEY = next_key  # updates the index
+                headers["apikey"] = API_KEY  # updates the dict used for request headers
 
+                # It is assumed that if a key has been switched, the previous key has been used and hence, the
+                # key that has been used and just swapped out will have a longer wait until ratelimit reset than
+                # the next key.
+                # Hence, if the next API key has been used, and the limts are under the threshold, wait.
                 if API_KEYS[CURRENT_API_KEY][1] is not None and ((daily < 5) and (hourly < 5)):
                     waitforapirequests(API_KEYS[CURRENT_API_KEY][1])
 
