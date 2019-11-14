@@ -53,8 +53,7 @@ with logger.catch():
     def waitforapirequests(hourlyreset):
         delta = (parse_api_time(hourlyreset) - datetime.timestamp(datetime.now())) + 60
         while delta > 0:
-            print(f"\rWaiting {int(delta)} seconds ({int(int(delta / 60))} minutes) for api requests to reset...",
-                  end="")
+            print(f"\rWaiting {int(delta)} seconds ({int(int(delta/60))} minutes) for api requests to reset...", end="")
             delay = 15
             delta -= delay
             time.sleep(delay)
@@ -72,9 +71,9 @@ with logger.catch():
                 # switch API key
 
                 API_KEYS[CURRENT_API_KEY][1] = hreset
-
+                
                 next_key = CURRENT_API_KEY + 1
-                if next_key > len(API_KEYS) - 1:
+                if next_key > len(API_KEYS)-1:
                     next_key = 0
 
                 print(f"\nAPI ratelimit reached for key {CURRENT_API_KEY}, switching to key {next_key}.\n")
