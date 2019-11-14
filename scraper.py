@@ -14,11 +14,22 @@ with logger.catch():
     with open("settings.json") as f:
         settings = json.load(f)
 
-        API_KEY = settings["api_key"]
+        API_KEYS = settings["api_key"]
         AUTH_KEY = settings["auth_key"]
         API_URL = settings["api_url"]
         GAME = settings["game"]
         checkrange = range(settings["range"][0], settings["range"][1])
+
+    API_KEY = settings["api_key"]
+    if (type(API_KEYS) == str) or ((len(API_KEYS) > 1) and (type(API_KEYS) == str)):
+        API_KEY = API_KEYS if (type(API_KEYS == str)) else API_KEYS[0]
+        CURRENT_API_KEY = None
+    else:
+        CURRENT_API_KEY = 0
+        API_KEY = API_KEYS[CURRENT_API_KEY]
+
+    if CURRENT_API_KEY is not None:
+        API_KEYS = [[k, None] for k in API_KEYS]
 
     headers = {
         'apikey': API_KEY,
@@ -42,9 +53,39 @@ with logger.catch():
     def waitforapirequests(hourlyreset):
         delta = (parse_api_time(hourlyreset) - datetime.timestamp(datetime.now())) + 60
         while delta > 0:
-            print(f"\rWaiting {int(delta)} seconds for api requests to reset...", end="")
-            delta = delta - 15
-            time.sleep(15)
+            print(f"\rWaiting {int(delta)} seconds ({int(int(delta/60))} minutes) for api requests to reset...", end="")
+            delay = 15
+            delta -= delay
+            time.sleep(delay)
+
+
+    def check_api_ratelimits(daily, hourly, hreset):
+        global CURRENT_API_KEY
+        global headers
+        global API_KEY
+
+        if (daily < 5) and (hourly < 5):
+
+            if CURRENT_API_KEY is not None:
+
+                # switch API key
+
+                API_KEYS[CURRENT_API_KEY][1] = hreset
+                
+                next_key = CURRENT_API_KEY + 1
+                if next_key > len(API_KEYS)-1:
+                    next_key = 0
+
+                print(f"\nAPI ratelimit reached for key {CURRENT_API_KEY}, switching to key {next_key}.\n")
+
+                API_KEY = API_KEYS[next_key][0]
+                CURRENT_API_KEY = next_key
+                headers["apikey"] = API_KEY
+
+                waitforapirequests(API_KEYS[CURRENT_API_KEY][1])
+
+            else:
+                waitforapirequests(hreset)
 
 
     for mod_id in checkrange:
@@ -54,8 +95,8 @@ with logger.catch():
         html = html[html.find('>') + 1:html.find('<', 2)]
         if not any(x in html.lower() for x in ["hidden mod", "not found", "not published"]):
             r = requests.get(f"https://api.nexusmods.com/v1/games/{GAME}/mods/{mod_id}/files.json", headers=headers)
-            dreqs = r.headers['x-rl-daily-remaining']
-            hreqs = r.headers['x-rl-hourly-remaining']
+            dreqs = int(r.headers['x-rl-daily-remaining'])
+            hreqs = int(r.headers['x-rl-hourly-remaining'])
             hreset = r.headers['x-rl-hourly-reset']
             reqs = f"API Reqs reamining: {dreqs} | {hreqs}"
             if r.ok:
@@ -66,8 +107,8 @@ with logger.catch():
                     print("This mod has no files")
                     r = requests.get(f"https://api.nexusmods.com/v1/games/{GAME}/mods/{mod_id}.json", headers=headers)
 
-                    dreqs = r.headers['x-rl-daily-remaining']
-                    hreqs = r.headers['x-rl-hourly-remaining']
+                    dreqs = int(r.headers['x-rl-daily-remaining'])
+                    hreqs = int(r.headers['x-rl-hourly-remaining'])
                     hreset = r.headers['x-rl-hourly-reset']
                     reqs = f"API Reqs reamining: {dreqs} | {hreqs}"
                     
@@ -112,8 +153,8 @@ with logger.catch():
                         if not r.ok:
                             logger.error(f"Database request | {mod_id} | {reqs} | {r.text}")
                         print(f"Database request | {reqs} | {r.text}")
-                        if (int(dreqs) < 5) and (int(hreqs) < 5):
-                            waitforapirequests(hreset)
+                        
+                        check_api_ratelimits(dreqs, hreqs, hreset)
                             
             else:
                 logger.error(f"Mod gone, oh man :c : {r.text}")
