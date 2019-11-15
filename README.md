@@ -11,5 +11,5 @@ To use multiple Nexus API keys using the scraper, change the `api-key` section t
 Otherwise, just put one API key in like this:
 
 ```json
-"api-key": "api key one"
+"api-key": ["api key one"]
 ```
