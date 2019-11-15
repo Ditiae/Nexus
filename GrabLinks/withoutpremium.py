@@ -27,7 +27,12 @@ def new_url(url):
     pyautogui.press("a")
     pyautogui.keyUp("ctrl")
     time.sleep(0.1)
-    pyautogui.typewrite(f"{url}\n", interval=0.05)
+    pyautogui.typewrite(f"{url}", interval=0.05)
+    time.sleep(0.1)
+    pyautogui.press("delete")  # removes any autocomplete
+    time.sleep(0.1)
+    pyautogui.press("enter")
+    time.sleep(0.1)
 
 
 def press_vortx():
@@ -47,9 +52,10 @@ def press_vortx():
     """
 
 
-for i in range(26000, 26020):
+for i in range(8, 18):
 
-    url = base_url.format(mod, i)
+    mod_id = int(i)
+    url = base_url.format(mod, mod_id)
     print(f"\nMod ID {i}")
     new_url(url)
     time.sleep(2.5)
@@ -85,6 +91,7 @@ for i in range(26000, 26020):
         continue
 
     print("Taking link")
+
     press_vortx()
     counter = 0
     while True:
@@ -93,15 +100,14 @@ for i in range(26000, 26020):
 
         with open("share", "r+") as f:
             f_content = f.read()
-            if f_content != " ":
-                links[url] = f_content
-                f.seek(0)
-                f.write(" ")
+            if f_content != "":
+                links[mod_id] = f_content
+                f.truncate(0)
                 break
 
     time.sleep(0.5)
 
-    print(f"\nGot link ({links[url]})")
+    print(f"\nGot link ({links[mod_id]})")
 
 print("\n\n\n")
 pprint(links)
