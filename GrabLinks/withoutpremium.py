@@ -20,10 +20,13 @@ print("Starting")
 
 def new_url(url):
     pyautogui.moveTo(addr_bar)
+    time.sleep(0.1)
     pyautogui.click()
+    time.sleep(0.1)
     pyautogui.keyDown("ctrl")
     pyautogui.press("a")
     pyautogui.keyUp("ctrl")
+    time.sleep(0.1)
     pyautogui.typewrite(f"{url}\n", interval=0.05)
 
 
@@ -43,43 +46,62 @@ def press_vortx():
     pyautogui.press("esc")
     """
 
-for i in range(26079, 26082):
+
+for i in range(26000, 26020):
 
     url = base_url.format(mod, i)
-    print(f"\nURL: {url}, mod ID {i}")
+    print(f"\nMod ID {i}")
     new_url(url)
-    time.sleep(2)
+    time.sleep(2.5)
 
-    for i in range(3):
-        print("Searching for button...")
-        pos = imgsearch.imagesearch("vortex.png")
-        if pos[0] != -1:
-           print("Found at ", pos[0], pos[1])
-           vortx_down = pyautogui.Point(pos[0], pos[1])
+    hc = False
+    for i in ["notfound.png", "hidden.png"]:
+        position = imgsearch.imagesearch(i)
+        if position[0] != -1:
+            print("Mod either hidden or not found. Moving to next mod.")
+            hc = True
+            break
+
+    if hc:
+        continue
+
+    hc = False
+    for i in range(5):
+        e = "." * i
+        print(f"\rSearching for button{e}", end="")
+        position = imgsearch.imagesearch("vortex.png")
+        if position[0] != -1:
+           print("\nFound at ", position[0], position[1])
+           vortx_down = pyautogui.Point(position[0], position[1])
            break
         else:
-            print(f"Button not found, attempt {i} gone")
-            time.sleep(2)
-            if i == 2:
-                sys.exit()
+            time.sleep(0.25)
+            if i == 4:
+                print("\nButton not found. Moving to next mod.")
+                hc = True
+                break
+
+    if hc:
+        continue
 
     print("Taking link")
     press_vortx()
     counter = 0
-    previous_content = ""
     while True:
         counter += 1
         print(f"\rWaiting for link handler ({counter})", end="")
-        with open("share") as f:
+
+        with open("share", "r+") as f:
             f_content = f.read()
-            if f_content != previous_content:
-                previous_content = f_content
+            if f_content != " ":
                 links[url] = f_content
+                f.seek(0)
+                f.write(" ")
                 break
 
-    time.sleep(0.2)
+    time.sleep(0.5)
 
-    print(f"Got link ({links[url]}")
+    print(f"\nGot link ({links[url]})")
 
 print("\n\n\n")
 pprint(links)

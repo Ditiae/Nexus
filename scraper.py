@@ -94,7 +94,7 @@ with logger.catch():
 
                 # It is assumed that if a key has been switched, the previous key has been used and hence, the
                 # key that has been used and just swapped out will have a longer wait until ratelimit reset than
-                # the next key.
+                # the next key. Tom from the future: turns out all ratelimits reset at the same time anyway
                 # Hence, if the next API key has been used, and the limts are under the threshold, wait.
                 if API_KEYS[CURRENT_API_KEY][1] is not None and ((daily < 5) and (hourly < 5)):
                     waitforapirequests(API_KEYS[CURRENT_API_KEY][1])
