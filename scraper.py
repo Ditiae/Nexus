@@ -174,36 +174,27 @@ with logger.catch():
                         check_api_ratelimits(dreqs, hreqs, hreset)
 
             else:
-                try:
-                    j = r.json()
-                    if "msg" in j:
-                        if "too many requests" in j["msg"].lower():  # check for the ratelimit being completely saturated
-                            check_api_ratelimits(0, 0, r.headers["x-rl-hourly-reset"])
-                        else:
-                            logger.error(f"Mod gone, oh man :c : {r.text}")
-                    elif "message" in j:
-                        if "no mod found" in j["message"].lower():
-                            params = {
-                                'mod_id': f'{mod_id}',
-                                'mod_name': html,
-                                'mod_desc': "",
-                                'mod_version': "0",
-                                'file_id': None,
-                                'size_kb': None,
-                                'category_name': html.upper(),
-                                'content_preview': "{}",
-                                'uploaded_time': None,
-                                'external_virus_scan_url': "",
-                                'adult_content': False,
-                                'key': AUTH_KEY
-                            }
-                            r = requests.post(API_URL, data=params)
-                        else:
-                            logger.error(f"Mod gone, oh man :c : {r.text}")
-                    else:
-                        logger.error(f"Mod gone, oh man :c : {r.text}")
-                except json.decoder.JSONDecodeError:
-                    logger.error(f"Mod gone, oh man :c : {r.text}")
+                if r.status_code == 249:
+                    check_api_ratelimits(0, 0, r.headers["x-rl-hourly-reset"])
+                elif r.status_code == 404:
+                    params = {
+                        'mod_id': f'{mod_id}',
+                        'mod_name': html,
+                        'mod_desc': "",
+                        'mod_version': "0",
+                        'file_id': None,
+                        'size_kb': None,
+                        'category_name': html.upper(),
+                        'content_preview': "{}",
+                        'uploaded_time': None,
+                        'external_virus_scan_url': "",
+                        'adult_content': False,
+                        'key': AUTH_KEY
+                    }
+                    r = requests.post(API_URL, data=params)
+                else:
+                    logger.error(f"Unknown response from API (HTTP {r.status_code}) : {r.text}")
+
         else:
             print(html)
             params = {
