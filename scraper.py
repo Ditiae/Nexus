@@ -174,7 +174,7 @@ with logger.catch():
                         check_api_ratelimits(dreqs, hreqs, hreset)
 
             else:
-                if r.status_code == 249:
+                if r.status_code == 429:
                     check_api_ratelimits(0, 0, r.headers["x-rl-hourly-reset"])
                 elif r.status_code == 404:
                     params = {
