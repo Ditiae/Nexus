@@ -96,7 +96,10 @@ with logger.catch():
                 # key that has been used and just swapped out will have a longer wait until ratelimit reset than
                 # the next key. Tom from the future: turns out all ratelimits reset at the same time anyway
                 # Hence, if the next API key has been used, and the limts are under the threshold, wait.
-                if API_KEYS[CURRENT_API_KEY][1] is not None and ((daily < 5) and (hourly < 5)):
+
+                r = requests.get("https://api.nexusmods.com/v1/users/validate.json", headers=headers)  # gets ratelimit info for new key
+
+                if API_KEYS[CURRENT_API_KEY][1] is not None and ((int(r.headers['x-rl-daily-remaining']) < 5) and (int(r.headers['x-rl-hourly-remaining']) < 5)):
                     waitforapirequests(API_KEYS[CURRENT_API_KEY][1])
 
             else:
@@ -172,8 +175,31 @@ with logger.catch():
 
             else:
                 try:
-                    if "too many requests" in r.json()["msg"].lower():  # check for the ratelimit being completely saturated
-                        check_api_ratelimits(0, 0, r.headers["x-rl-hourly-reset"])
+                    j = r.json()
+                    if "msg" in j:
+                        if "too many requests" in j["msg"].lower():  # check for the ratelimit being completely saturated
+                            check_api_ratelimits(0, 0, r.headers["x-rl-hourly-reset"])
+                        else:
+                            logger.error(f"Mod gone, oh man :c : {r.text}")
+                    elif "message" in j:
+                        if "no mod found" in j["message"].lower():
+                            params = {
+                                'mod_id': f'{mod_id}',
+                                'mod_name': html,
+                                'mod_desc': "",
+                                'mod_version': "0",
+                                'file_id': None,
+                                'size_kb': None,
+                                'category_name': html.upper(),
+                                'content_preview': "{}",
+                                'uploaded_time': None,
+                                'external_virus_scan_url': "",
+                                'adult_content': False,
+                                'key': AUTH_KEY
+                            }
+                            r = requests.post(API_URL, data=params)
+                        else:
+                            logger.error(f"Mod gone, oh man :c : {r.text}")
                     else:
                         logger.error(f"Mod gone, oh man :c : {r.text}")
                 except json.decoder.JSONDecodeError:
