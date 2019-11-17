@@ -1,6 +1,6 @@
 <?php
 
-require("../../../../common.inc");
+require("../../../../common.php");
 
 $fields = array("mod_id", "download_url");
 $inputs = array();
