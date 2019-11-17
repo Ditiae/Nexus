@@ -47,7 +47,8 @@ $sqlstr = "INSERT INTO skyrim_downloads ({$valstring}) VALUES ({$markstring})";
 $sql = $conn->prepare($sqlstr);
 
 if (!$sql) {
-  e("Internal server error", $code=500);
+  $resp = mysqli_error($conn);
+  e("Internal SQL error: {$resp}", $code=500);
 }
 
 $sql->bind_param("ss", $inputs["mod_id"], $inputs["download_url"]);
