@@ -13,11 +13,13 @@ function e($msg, $code=400) {
 
 
 if($_SERVER['REQUEST_METHOD'] != "POST") {
-    e("Only POST requests allowed", $code=403);
+  header("Allow: POST");
+  e("Only POST requests allowed", $code=405);
 }
 
 require("settings.inc");
 
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 $conn = mysqli_connect($DB_SERVER, $DB_USER, $DB_PASSWORD, $DB_NAME);
 
 if (!$conn) { // if that connection didn't work
