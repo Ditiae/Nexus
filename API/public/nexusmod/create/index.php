@@ -1,35 +1,6 @@
 <?php
 
-// 0x5444#8669
-
-header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *");
-
-function e($msg, $code=400) {
-  http_response_code($code);
-  echo json_encode(array("status" => "error", "message" => $msg));
-  die();
-}
-
-if($_SERVER['REQUEST_METHOD'] != "POST") {
-    e("Only POST requests allowed", $code=403);
-}
-
-require("../../../settings.inc");
-
-$conn = mysqli_connect($DB_SERVER, $DB_USER, $DB_PASSWORD, $DB_NAME);
-
-if (!$conn) { // if that connection didn't work
-    e("Internal server error", $code=500);
-}
-
-
-// check if auth key is specified
-if (!array_key_exists("key", $_POST)) {
-  e("Provide an auth key");
-} elseif (!in_array($_POST["key"], $AUTH_KEYS)) {  // check auth key
-  e("Invalid auth key", $code=403);
-}
+require("../../../common.php");
 
 $fields = array("mod_id", "mod_name", "mod_desc", "mod_version", "file_id", "size_kb", "category_name", "adult_content", "content_preview", "uploaded_time", "external_virus_scan_url");
 $inputs = array();
