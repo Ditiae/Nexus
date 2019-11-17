@@ -146,6 +146,9 @@ with logger.catch():
 
                         r = requests.post(API_URL, data=params)
 
+                        if not r.ok:
+                            logger.error(f"Error on internal API | {r.status_code} | {r.text}")
+
                         print(f"Database request | {reqs} | {r.text}")
 
                 else:
