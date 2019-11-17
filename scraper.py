@@ -148,8 +148,8 @@ with logger.catch():
 
                         if not r.ok:
                             logger.error(f"Error on internal API | {r.status_code} | {r.text}")
-
-                        print(f"Database request | {reqs} | {r.text}")
+                        else:
+                            print(f"Database request | {reqs} | {r.text}")
 
                 else:
                     x = range(0, len(files))
