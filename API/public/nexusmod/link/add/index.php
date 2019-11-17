@@ -43,17 +43,23 @@ if ((!ctype_digit(str_replace(".", "", $inputs["mod_id"])))) {
 
 // make request
 $sqlstr = "INSERT INTO skyrim_downloads ({$valstring}) VALUES ({$markstring})";
-
 $sql = $conn->prepare($sqlstr);
-
-if (!$sql) {
-  $resp = mysqli_error($conn);
-  e("Internal SQL error: {$resp}", $code=500);
-}
 
 $sql->bind_param("ss", $inputs["mod_id"], $inputs["download_url"]);
 
-$sql->execute();
+try {
+  $sql->execute();
+} catch (Exception $ex) {
+  $err = mysqli_error($conn);
+  if (strpos($err, "Cannot add or update a child row") !== false) {
+    e("Invalid mod_id");
+  } elseif (strpos($err, "Duplicate entry") !== false) {
+    e("Entry already exists for this mod_id");
+  } else {
+    throw $ex;
+  }
+}
+
 $sql->close();
 
 echo json_encode(array("status" => "ok", "message" => "Success!"));
