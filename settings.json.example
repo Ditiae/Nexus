@@ -1,0 +1,12 @@
+# Fill in the details below, remove this line and rename this file to settings.json
+{
+    "api_key": [
+    	"put your nexus key one here",
+    	"nexus key two",
+    	"etc."
+    ],
+    "auth_key": "put your internal auth key here",
+    "api_url": "https://arch.tdpain.net/api/nexusmod/create/",
+    "game": "skyrim",
+    "range": [92000, 95000]
+}
