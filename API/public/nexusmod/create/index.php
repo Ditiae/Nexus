@@ -25,7 +25,7 @@ if (!$conn) { // if that connection didn't work
 
 
 // check if auth key is specified
-if (array_key_exists("key", $_POST["key"])) {
+if (array_key_exists("key", $_POST)) {
   e("Provide an auth key");
 } elseif (!in_array($_POST["key"], $AUTH_KEYS)) {  // check auth key
   e("Invalid auth key", $code=403);
