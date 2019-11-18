@@ -3,7 +3,7 @@
 require("../../../../common.php");
 
 // make SQL query
-$sql = $conn->prepare("SELECT * FROM skyrim_downloads LIMIT 1");
+$sql = $conn->prepare("SELECT skyrim_downloads.*, skyrim.mod_name, skyrim.mod_version FROM skyrim_downloads JOIN skyrim ON skyrim.mod_id = skyrim_downloads.mod_id LIMIT 1");
 $sql->execute();
 $result = $sql->get_result();
 
