@@ -65,7 +65,7 @@ if (json_last_error() != JSON_ERROR_NONE) {
   e("content_preview is not valid JSON");
 }
 
-$sqlstr = "INSERT INTO skyrim ({$valstring}) VALUES ({$markstring})";
+$sqlstr = "REPLACE INTO skyrim ({$valstring}) VALUES ({$markstring})";
 
 $sql = $conn->prepare($sqlstr);
 

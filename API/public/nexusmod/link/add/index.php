@@ -42,7 +42,7 @@ if ((!ctype_digit(str_replace(".", "", $inputs["mod_id"])))) {
 }
 
 // make request
-$sqlstr = "INSERT INTO skyrim_downloads ({$valstring}) VALUES ({$markstring})";
+$sqlstr = "REPLACE INTO skyrim_downloads ({$valstring}) VALUES ({$markstring})";
 $sql = $conn->prepare($sqlstr);
 
 $sql->bind_param("ss", $inputs["mod_id"], $inputs["download_url"]);
