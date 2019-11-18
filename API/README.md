@@ -23,7 +23,32 @@ Parameters:
 - `content_preview` - must be valid JSON if specified in request
 - `external_virus_scan_url`
 - `uploaded_time` - must be an integer timestamp if specified in request
-- `key` - Authentication key, required
+- `key` - **required**. Internal API authentication key.
+
+#### Update a mod entry
+
+*If the mod ID exists and `category_name` for that mod is set to `NOT FOUND` or `HIDDEN MOD`, the row will be updated. Otherwise, it will fail.*
+
+Endpoint - https://arch.tdpain.net/api/nexusmod/update/
+
+Method - POST
+
+Returns - HTTP 200 on success, HTTP 404 if row not found, HTTP 400 if `category_name` is invalid
+
+Parameters: 
+
+- `mod_id` - **required** and can be a number with a decimal point
+- `mod_name`
+- `mod_desc`
+- `mod_version`
+- `file_id` - must be integer if specified in request
+- `size_kb` - must be integer if specified in request
+- `category_name`
+- `adult_content` - must be Boolean if specified in request
+- `content_preview` - must be valid JSON if specified in request
+- `external_virus_scan_url`
+- `uploaded_time` - must be an integer timestamp if specified in request
+- `key` - **required**. Internal API authentication key.
 
 #### Add download link to mod entry
 
