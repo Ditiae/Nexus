@@ -1,0 +1,6 @@
+# Fill in the details below, remove this line and rename this file to settings.json
+{
+  "download_dir": "downloads",
+  "endpoint": "https://arch.tdpain.net/api/nexusmod/link/",
+  "auth_key": "put your internal auth key here"
+}

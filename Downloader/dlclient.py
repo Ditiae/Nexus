@@ -7,6 +7,7 @@ import os
 import time
 import sys
 
+# TODO: Add support for gamespecific download directory
 
 # -- FUNCTIONS --
 def make_dir(path):
@@ -90,6 +91,6 @@ while True:  # to infinity and... nowhere
                 sys.exit()
         else:
             print("Remove request successful")
-    
+
         print("Finished!\n")
         sys.exit()
