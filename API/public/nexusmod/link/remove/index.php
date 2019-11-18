@@ -27,7 +27,6 @@ if ($result->num_rows == 0) {
   e("No entry exists with specified ID");
 }
 
-
 // make request
 $sql = $conn->prepare("DELETE FROM skyrim_downloads WHERE mod_id = ? LIMIT 1");
 
