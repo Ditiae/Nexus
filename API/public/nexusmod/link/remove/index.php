@@ -24,7 +24,7 @@ $result = $sql->get_result();
 $sql->close;
 
 if ($result->num_rows == 0) {
-  e("No entry exists with specified ID");
+  e("No entry exists with specified ID", $code=404);
 }
 
 // make request
