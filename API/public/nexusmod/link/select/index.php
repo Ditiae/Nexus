@@ -7,9 +7,10 @@ $sql = $conn->prepare("SELECT * FROM skyrim_downloads LIMIT 1");
 $sql->execute();
 $result = $sql->get_result();
 
-if ($results->num_rows > 0) {
-	$row = $results->fetch_assoc();
-	echo json_encode($row, JSON_FORCE_OBJECT);
+if ($result->num_rows > 0) {
+	$row = $result->fetch_assoc();
+  echo json_encode(array("status" => "ok", "message" => "Success!", "content" => $row));
 } else {
-	echo "Nothing was returned :(";
+  http_response_code(404);
+  echo json_encode(array("status" => "error", "message" => "No rows exist in database", "content" => null));
 }
