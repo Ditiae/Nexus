@@ -65,7 +65,17 @@ if (json_last_error() != JSON_ERROR_NONE) {
   e("content_preview is not valid JSON");
 }
 
-$sqlstr = "REPLACE INTO skyrim ({$valstring}) VALUES ({$markstring})";
+// check if ID already exists, and if so, stop
+$sql = $conn->prepare("SELECT * FROM skyrim WHERE mod_id=?");
+$sql->bind_param("s", $inputs["mod_id"]);
+$sql->execute();
+$result = $sql->get_result();
+$sql->close();
+if ($result->num_rows != 0) {
+  e("An entry with that mod_id already exists");
+}
+
+$sqlstr = "INSERT INTO skyrim ({$valstring}) VALUES ({$markstring})";
 
 $sql = $conn->prepare($sqlstr);
 
