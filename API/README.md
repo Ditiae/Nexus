@@ -27,7 +27,7 @@ Parameters:
 
 #### Update a mod entry
 
-*If the mod ID exists and `category_name` for that mod is set to `NOT FOUND` or `HIDDEN MOD`, the row will be updated. Otherwise, it will fail.*
+*If the mod ID exists and `category_name` for that mod is set to `NOT FOUND` or `HIDDEN MOD`, the row will be updated with the values provided. Otherwise, it will fail.*
 
 Endpoint - https://arch.tdpain.net/api/nexusmod/update/
 
