@@ -62,4 +62,5 @@ try {
 
 $sql->close();
 
+http_response_code(201);
 echo json_encode(array("status" => "ok", "message" => "Success!"));

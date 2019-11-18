@@ -78,4 +78,5 @@ $sql->bind_param("sssssssssss", $inputs["mod_id"], $inputs["mod_name"], $inputs[
 $sql->execute();
 $sql->close();
 
+http_response_code(201);
 echo json_encode(array("status" => "ok", "message" => "Success!"));
