@@ -2,7 +2,7 @@
 
 require("../../../common.php");
 
-$allowable_categories = array("NOT FOUND", "HIDDEN MOD", "NO FILES", "NOT PUBLISHED", "UNDER MODERATION", "NONE");
+$allowable_categories = array("NOT FOUND", "HIDDEN MOD", "NO FILES", "NOT PUBLISHED", "UNDER MODERATION", "NON");
 $fields = array("mod_id", "mod_name", "mod_desc", "mod_version", "file_id", "size_kb", "category_name", "adult_content", "content_preview", "uploaded_time", "external_virus_scan_url");
 $inputs = array();
 

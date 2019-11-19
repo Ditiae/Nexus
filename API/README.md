@@ -33,7 +33,7 @@ Parameters:
 - `NO FILES`
 - `NOT PUBLISHED`
 - `UNDER MODERATION`
-- `NONE`
+- `NON`
 
 Endpoint - https://arch.tdpain.net/api/nexusmod/update/
 
