@@ -27,7 +27,13 @@ Parameters:
 
 #### Update a mod entry
 
-*If the mod ID exists and `category_name` for that mod is set to `NOT FOUND` or `HIDDEN MOD`, the row will be updated with the values provided. Otherwise, it will fail.*
+*If the mod ID exists and `category_name` for that mod is set to one of the following, the row will be updated with the values provided. Otherwise, it will fail.*
+- `NOT FOUND`
+- `HIDDEN MOD`
+- `NO FILES`
+- `NOT PUBLISHED`
+- `UNDER MODERATION`
+- `NONE`
 
 Endpoint - https://arch.tdpain.net/api/nexusmod/update/
 
@@ -35,7 +41,7 @@ Method - POST
 
 Returns - HTTP 200 on success, HTTP 404 if row not found, HTTP 400 if `category_name` is invalid
 
-Parameters: 
+Parameters:
 
 - `mod_id` - **required** and can be a number with a decimal point
 - `mod_name`

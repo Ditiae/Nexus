@@ -2,6 +2,7 @@
 
 require("../../../common.php");
 
+$allowable_categories = array("NOT FOUND", "HIDDEN MOD", "NO FILES", "NOT PUBLISHED", "UNDER MODERATION", "NONE");
 $fields = array("mod_id", "mod_name", "mod_desc", "mod_version", "file_id", "size_kb", "category_name", "adult_content", "content_preview", "uploaded_time", "external_virus_scan_url");
 $inputs = array();
 
@@ -75,7 +76,7 @@ if ($result->num_rows == 0) {
   e("No entry with that mod_id exists.", $code=404);
 } else {
   $row = $result->fetch_assoc();
-  if (!in_array($row["category_name"], array("NOT FOUND", "HIDDEN MOD"))) {
+  if (!in_array($row["category_name"], $allowable_categories)) {
     e("The entry has been found, but the category name does not allow updates to that row");
   }
 }
