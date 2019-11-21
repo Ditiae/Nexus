@@ -56,6 +56,20 @@ Parameters:
 - `uploaded_time` - must be an integer timestamp if specified in request
 - `key` - **required**. Internal API authentication key.
 
+#### Retrieve a mod entry
+
+Endpoint - https://arch.tdpain.net/api/nexusmod/select/
+
+Method - POST
+
+Returns - HTTP 200 on success, HTTP 404 if ID not found
+
+Parameters:
+
+- `mod_id` - **required** and can be a number with a decimal point
+- `key` - **required**. Internal API authentication key.
+
+
 #### Add download link to mod entry
 
 Endpoint - https://arch.tdpain.net/api/nexusmod/link/add/
