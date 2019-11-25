@@ -1,15 +1,3 @@
 # Nexus project
-
-To use multiple Nexus API keys using the scraper, change the `api-key` section to this:
-
-```json
-"api-key": ["api key one here",
-"api hey two here",
-"etc"]
-```
-
-Otherwise, just put one API key in like this:
-
-```json
-"api-key": ["api key one"]
-```
+ 
+See [https://github.com/Wea1thRS/Nexus/wiki/Scraper-configuration-and-usage](https://github.com/Wea1thRS/Nexus/wiki/Scraper-configuration-and-usage) for configuration and usage instructions for the scraper.
