@@ -45,7 +45,8 @@ while True:  # to infinity and... nowhere
 
     if not r.ok:
         if r.status_code == 500:  # catastrophic API failiure
-            logger.error("Catastrophic API failiure has occured. Inform 0x5444#8669 ASAP.\nResponse from API: {r.text}\nResponse headers: {r.headers}\nResponse code: 500\nExiting now.")
+            logger.error("Catastrophic API failiure has occured. Inform 0x5444#8669 ASAP.\nResponse from API: {r.text}"
+                         "\nResponse headers: {r.headers}\nResponse code: 500\nExiting now.")
             sys.exit()
 
         elif r.status_code == 404:  # no rows found
@@ -80,14 +81,17 @@ while True:  # to infinity and... nowhere
         r = requests.post(f"{endpoint}remove/", data={**post_args, "mod_id": original_mod_id})
         if not r.ok:
             if r.status_code == 500:  # catastrophic API failiure
-                logger.error("Catastrophic API failiure has occured. Inform 0x5444#8669 ASAP.\nResponse from API: {r.text}\nResponse headers: {r.headers}\nResponse code: 500\nExiting now.")
+                logger.error("Catastrophic API failiure has occured. Inform 0x5444#8669 ASAP.\nResponse from API: "
+                             "{r.text}\nResponse headers: {r.headers}\nResponse code: 500\nExiting now.")
                 sys.exit()
 
             elif r.status_code == 404:  # mod_id not found
-                logger.error(f"Remove endpoint sent the following error details\nMod ID {original_mod_id}\nResponse: {r.text}\nResponse code: 404\nPlease inform 0x5444#8669")
+                logger.error(f"Remove endpoint sent the following error details\nMod ID {original_mod_id}\nResponse:"
+                             f" {r.text}\nResponse code: 404\nPlease inform 0x5444#8669")
 
             else:
-                logger.error(f"Unhandled API response code.\nMod ID {original_mod_id}\nResponse: {r.text}\nResponse code: {r.status_code}\nExiting now.")
+                logger.error(f"Unhandled API response code.\nMod ID {original_mod_id}\nResponse: {r.text}\nResponse"
+                             f" code: {r.status_code}\nExiting now.")
                 sys.exit()
         else:
             print("Remove request successful")
