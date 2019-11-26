@@ -9,17 +9,19 @@ import sys
 
 # TODO: Add support for gamespecific download directory
 
+
 # -- FUNCTIONS --
 def make_dir(path):
     if not os.path.exists(path):
         os.mkdir(path)
 
 
-def make_mod_dir(id):
-    id = str(id)
-    dir_string = f"{download_dir}\\{id}"
+def make_mod_dir(id_input):
+    id_input = str(id_input)
+    dir_string = f"{download_dir}\\{id_input}"
     make_dir(dir_string)
     return dir_string
+
 
 # -- INITIALISATION --
 # load settings
