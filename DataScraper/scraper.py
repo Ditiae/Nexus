@@ -16,7 +16,7 @@ with logger.catch():
 
         API_KEYS = settings["api_key"]
         AUTH_KEY = settings["auth_key"]
-        API_URL = settings["api_url"]
+        API_URL = settings["base_api_url"]
         GAME = settings["game"]
         checkrange = range(settings["range"][0], settings["range"][1])
 
@@ -39,8 +39,6 @@ with logger.catch():
         'accept': 'applications/json'
     }
 
-    mods = {}
-
 
     def parse_api_time(date):
         s = date.split(":")
@@ -53,7 +51,7 @@ with logger.catch():
         return datetime.timestamp(datetime.strptime(date, '%Y-%m-%dT%H:%M:%S%z'))
 
 
-    def waitforapirequests(hourlyreset):
+    def wait_for_api_requests(hourlyreset):
         delta = (parse_api_time(hourlyreset) - datetime.timestamp(datetime.now())) + 60
         while delta > 0:
             if int(delta / 60) < 1:
@@ -97,13 +95,15 @@ with logger.catch():
                 # the next key. Tom from the future: turns out all ratelimits reset at the same time anyway
                 # Hence, if the next API key has been used, and the limts are under the threshold, wait.
 
-                r = requests.get("https://api.nexusmods.com/v1/users/validate.json", headers=headers)  # gets ratelimit info for new key
+                r = requests.get("https://api.nexusmods.com/v1/users/validate.json", headers=headers)  # gets ratelimit
+                # info for new key
 
-                if API_KEYS[CURRENT_API_KEY][1] is not None and ((int(r.headers['x-rl-daily-remaining']) < 5) and (int(r.headers['x-rl-hourly-remaining']) < 5)):
-                    waitforapirequests(API_KEYS[CURRENT_API_KEY][1])
+                if API_KEYS[CURRENT_API_KEY][1] is not None and ((int(r.headers['x-rl-daily-remaining']) < 5) and
+                                                                 (int(r.headers['x-rl-hourly-remaining']) < 5)):
+                    wait_for_api_requests(API_KEYS[CURRENT_API_KEY][1])
 
             else:
-                waitforapirequests(hreset)
+                wait_for_api_requests(hreset)
 
 
     for mod_id in checkrange:
@@ -144,7 +144,7 @@ with logger.catch():
                             'key': AUTH_KEY
                         }
 
-                        r = requests.post(API_URL, data=params)
+                        r = requests.post(API_URL + "create/", data=params)
 
                         if not r.ok:
                             logger.error(f"Error on internal API | {r.status_code} | {r.text}")
@@ -170,7 +170,7 @@ with logger.catch():
                             'adult_content': html.lower() == "adult content",
                             'key': AUTH_KEY
                         }
-                        r = requests.post(API_URL, data=params)
+                        r = requests.post(API_URL + "create/", data=params)
                         if not r.ok:
                             logger.error(f"Database request | {mod_id} | {reqs} | {r.text}")
                         print(f"Database request | {reqs} | {r.text}")
@@ -194,7 +194,7 @@ with logger.catch():
                         'adult_content': False,
                         'key': AUTH_KEY
                     }
-                    r = requests.post(API_URL, data=params)
+                    r = requests.post(API_URL + "create/", data=params)
                 else:
                     logger.error(f"Unknown response from API (HTTP {r.status_code}) : {r.text}")
 
@@ -214,7 +214,7 @@ with logger.catch():
                 'adult_content': False,
                 'key': AUTH_KEY
             }
-            r = requests.post(API_URL, data=params)
+            r = requests.post(API_URL + "create/", data=params)
             print(f"{r.text}")
 
             # file_dict = {}

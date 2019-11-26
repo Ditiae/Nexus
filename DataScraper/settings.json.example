@@ -6,7 +6,7 @@
     	"etc."
     ],
     "auth_key": "put your internal auth key here",
-    "api_url": "https://arch.tdpain.net/api/nexusmod/create/",
+    "base_api_url": "https://arch.tdpain.net/api/nexusmod/",
     "game": "skyrim",
     "range": [92000, 95000]
 }
