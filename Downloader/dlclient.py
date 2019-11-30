@@ -52,6 +52,7 @@ while True:  # to infinity and... nowhere
             sys.exit()
 
         elif r.status_code == 404:  # no rows found
+            print("Nothing found.... waiting....")
             time.sleep(10)
             continue
 
@@ -99,4 +100,3 @@ while True:  # to infinity and... nowhere
             print("Remove request successful")
 
         print("Finished!\n")
-        sys.exit()
