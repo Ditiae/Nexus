@@ -190,7 +190,7 @@ with logger.catch():
                     if "message" in j:
                         if "premium users only" in j["message"]:
                             # API key not premium
-                            print("\n{Back.RED}{Fore.WHITE}This API key is not attached to a premium account and hence this script cannot be "
+                            print(f"\n{Back.RED}{Fore.WHITE}This API key is not attached to a premium account and hence this script cannot be "
                                   "used to obtain download links.")
                             die_func()
                         else:
