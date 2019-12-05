@@ -5,6 +5,7 @@ import json
 import shutil
 import os
 import time
+from tqdm import tqdm
 import sys
 
 # TODO: Add support for gamespecific download directory
@@ -47,7 +48,7 @@ while True:  # to infinity and... nowhere
 
     if not r.ok:
         if r.status_code == 500:  # catastrophic API failiure
-            logger.error("Catastrophic API failiure has occured. Inform 0x5444#8669 ASAP.\nResponse from API: {r.text}"
+            logger.error("API failiure has occured. Inform 0x5444#8669 ASAP.\nResponse from API: {r.text}"
                          "\nResponse headers: {r.headers}\nResponse code: 500\nExiting now.")
             sys.exit()
 
@@ -76,15 +77,20 @@ while True:  # to infinity and... nowhere
         with zipfile.ZipFile(zip_name, "w", compression=zipfile.ZIP_LZMA) as zip_f:
             with zip_f.open(source_name_from_url, "w") as f:
                 print("Downloading...")
-                with requests.get(download_url, stream=True) as r:
-                    shutil.copyfileobj(r.raw, f)
+                with requests.get(download_url.replace(" ", "%20"), stream=True) as r:
+                    for chunk in tqdm(r.iter_content(chunk_size=8192)):
+                        r.raise_for_status()
+                        if chunk: # filter out keep-alive new chunks
+                            f.write(chunk)
+                #with requests.get(download_url.replace(" ", "%20"), stream=True) as r:
+                #    shutil.copyfileobj(r.raw, f)
 
         print("File download completed | Making remove request")
 
         r = requests.post(f"{endpoint}remove/", data={**post_args, "mod_id": original_mod_id})
         if not r.ok:
             if r.status_code == 500:  # catastrophic API failiure
-                logger.error("Catastrophic API failiure has occured. Inform 0x5444#8669 ASAP.\nResponse from API: "
+                logger.error("API failiure has occured. Inform 0x5444#8669 ASAP.\nResponse from API: "
                              "{r.text}\nResponse headers: {r.headers}\nResponse code: 500\nExiting now.")
                 sys.exit()
 
