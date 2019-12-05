@@ -152,7 +152,7 @@ with logger.catch():
                     logger.error(f"Unknown error from internal API - {r.text}, {r.status_code}")
                     die_func()
 
-            print(f"{Fore.Green}        Data retrieved")
+            print(f"{Fore.GREEN}        Data retrieved")
 
             try:
                 j = r.json()
