@@ -23,7 +23,7 @@ with logger.catch():
     API_KEY = settings["api_key"]
     if (type(API_KEYS) == str) or ((len(API_KEYS) == 1) and (type(API_KEYS) == list)):  # if the API keys entry in the
         # settings is a string or a list with length of one
-        API_KEY = API_KEYS if (type(API_KEYS == str)) else API_KEYS[0]
+        API_KEY = API_KEYS if (API_KEYS == str) else API_KEYS[0]
         CURRENT_API_KEY = None  # so it can be determined if multiple API keys are availble
     else:  # there is a list of keys
         CURRENT_API_KEY = 0  # start with the first provided key (CURRENT_API_KEY is a list index)

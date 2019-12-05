@@ -26,8 +26,9 @@ with logger.catch():
 
     # key switching setup
     API_KEY = settings["api_key"]
+
     if (type(API_KEYS) == str) or ((len(API_KEYS) == 1) and (type(API_KEYS) == list)):
-        API_KEY = API_KEYS if (type(API_KEYS == str)) else API_KEYS[0]
+        API_KEY = API_KEYS if (API_KEYS == str) else API_KEYS[0]
         CURRENT_API_KEY = None
     else:
         CURRENT_API_KEY = 0
@@ -41,7 +42,6 @@ with logger.catch():
         'accept': 'applications/json'
     }
 
-
     def parse_api_time(date):
         s = date.split(":")
         s[-2] = s[-2] + s[-1]
@@ -54,7 +54,7 @@ with logger.catch():
 
 
     def wait_for_api_requests(hourlyreset):
-        delta = (parse_api_time(hourlyreset) - datetime.timestamp(datetime.now())) + 60
+        delta = (parse_api_time(hourlyreset) - datetime.timestamp(datetime.now())) + 120
         while delta > 0:
             if int(delta / 60) < 1:
                 p = f"{int(delta)} seconds"
