@@ -77,12 +77,14 @@ while True:  # to infinity and... nowhere
         with zipfile.ZipFile(zip_name, "w", compression=zipfile.ZIP_LZMA) as zip_f:
             with zip_f.open(source_name_from_url, "w") as f:
                 print("Downloading...")
-                with requests.get(download_url.replace(" ", "%20"), stream=True) as r:
-                    for chunk in tqdm(r.iter_content(chunk_size=8192)):
+
+                with requests.get(download_url.replace(" ", "%20"), stream=True) as r:  # It should NOT take 40 minutes to download 1.6GBs
+                    for chunk in tqdm(r.iter_content(chunk_size=8192), unit="MB", unit_scale=0.008192):
                         r.raise_for_status()
                         if chunk: # filter out keep-alive new chunks
                             f.write(chunk)
-                #with requests.get(download_url.replace(" ", "%20"), stream=True) as r: this is supposedly 3x faster than f.write chunk
+
+                #with requests.get(download_url.replace(" ", "%20"), stream=True) as r:  # this is supposedly 3x faster than f.write chunk
                 #    shutil.copyfileobj(r.raw, f)
 
         print("File download completed | Making remove request")
