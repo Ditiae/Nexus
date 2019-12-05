@@ -15,7 +15,7 @@ if ((!ctype_digit(str_replace(".", "", $_POST["mod_id"])))) {
 }
 
 // make SQL query
-$sql = $conn->prepare("SELECT *FROM skyrim WHERE mod_id = ?");
+$sql = $conn->prepare("SELECT mod_id, file_id, category_name FROM skyrim WHERE mod_id = ?");
 $sql->bind_param("s", $_POST["mod_id"]);
 $sql->execute();
 
