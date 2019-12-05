@@ -88,6 +88,7 @@ while True:  # to infinity and... nowhere
         print("File download completed | Making remove request")
 
         r = requests.post(f"{endpoint}remove/", data={**post_args, "mod_id": original_mod_id})
+
         if not r.ok:
             if r.status_code == 500:  # catastrophic API failiure
                 logger.error("API failiure has occured. Inform 0x5444#8669 ASAP.\nResponse from API: "
