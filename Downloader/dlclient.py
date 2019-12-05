@@ -82,7 +82,7 @@ while True:  # to infinity and... nowhere
                         r.raise_for_status()
                         if chunk: # filter out keep-alive new chunks
                             f.write(chunk)
-                #with requests.get(download_url.replace(" ", "%20"), stream=True) as r:
+                #with requests.get(download_url.replace(" ", "%20"), stream=True) as r: this is supposedly 3x faster than f.write chunk
                 #    shutil.copyfileobj(r.raw, f)
 
         print("File download completed | Making remove request")
