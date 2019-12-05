@@ -153,6 +153,10 @@ with logger.catch():
                 logger.error(f"Cannot parse response from internal API - {r.text}, {r.status_code}")
                 die_func()
 
+            if j["content"]["category_name"] in ["NOT FOUND", "HIDDEN MOD", "NO FILES", "NOT PUBLISHED", "UNDER MODERATION", "NON"]:
+                print(f"        Mod - {j['content']['category_name']}")
+                continue
+
             file_id = j["content"]["file_id"]
 
             print(f"        Getting download link (file ID {file_id})")
