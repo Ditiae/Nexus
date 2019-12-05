@@ -1,10 +1,11 @@
 import sys
 import time
 from datetime import datetime
+import json
 
 import requests
 from loguru import logger
-import json
+from colorama import Fore, Back, init
 
 # TODO: There is a lot of common code in this file and DataScraper/scraper.py - consider refactoring to make it pull it
 #  all from one file
@@ -12,6 +13,7 @@ import json
 logger.add("error.log", level="ERROR")
 
 with logger.catch():
+    init(autoreset=True)  # colorama init
 
     with open("settings.json") as f:
         settings = json.load(f)
@@ -59,7 +61,7 @@ with logger.catch():
             else:
                 p = f"{int(delta / 60)} minutes"
 
-            print(f"\rWaiting {p} for api requests to reset...",
+            print(f"\r{Fore.YELLOW}Waiting {p} for api requests to reset...",
                   end="")
             delay = 15
             delta -= delay
@@ -84,7 +86,7 @@ with logger.catch():
                 if next_key > len(API_KEYS) - 1:
                     next_key = 0
 
-                print(f"\nAPI ratelimit reached for key {CURRENT_API_KEY}, switching to key {next_key}.\n")
+                print(f"\n{Fore.YELLOW}API ratelimit reached for key {CURRENT_API_KEY}, switching to key {next_key}.\n")
 
                 API_KEY = API_KEYS[next_key][0]  # sets API_KEY to the next key
                 CURRENT_API_KEY = next_key  # updates the index
@@ -109,6 +111,11 @@ with logger.catch():
         input("PRESS <ENTER> to exit")
         sys.exit()
 
+    def ratelimit_wrapper(robj):
+        dreqs = int(r.headers['x-rl-daily-remaining'])
+        hreqs = int(r.headers['x-rl-hourly-remaining'])
+        hreset = r.headers['x-rl-hourly-reset']
+        check_api_ratelimits(dreqs, hreqs, hreset)
 
     for mod_id in run_range:
         print(f"New mod: {mod_id}")
@@ -137,7 +144,7 @@ with logger.catch():
 
             if not r.ok:
                 if r.status_code == 403:
-                    print("Internal API authentication code incorrect.")
+                    print("{Back.RED}{Fore.WHITE}Internal API authentication code incorrect.")
                     die_func()
                 elif r.status_code == 404:
                     break
@@ -145,12 +152,12 @@ with logger.catch():
                     logger.error(f"Unknown error from internal API - {r.text}, {r.status_code}")
                     die_func()
 
-            print(f"        Data retrieved")
+            print(f"{Fore.Green}        Data retrieved")
 
             try:
                 j = r.json()
             except json.decoder.JSONDecodeError:
-                logger.error(f"Cannot parse response from internal API - {r.text}, {r.status_code}")
+                logger.error(f"{Back.RED}{Fore.WHITE}Cannot parse response from internal API - {r.text}, {r.status_code}")
                 die_func()
 
             if j["content"]["category_name"] in ["NOT FOUND", "HIDDEN MOD", "NO FILES", "NOT PUBLISHED", "UNDER MODERATION", "NON"]:
@@ -165,10 +172,12 @@ with logger.catch():
                 f"https://api.nexusmods.com/v1/games/{GAME}/mods/{mod_id}/files/{file_id}/download_link.json",
                 headers=headers)
 
+            ratelimit_wrapper(r)
+
             if not r.ok:
                 if r.status_code == 404:
                     # file not found
-                    print("            File not found")
+                    print("{Fore.RED}            File not found")
                     continue
                 elif r.status_code == 403:
 
@@ -181,18 +190,18 @@ with logger.catch():
                     if "message" in j:
                         if "premium users only" in j["message"]:
                             # API key not premium
-                            print("\nThis API key is not attached to a premium account and hence this script cannot be "
+                            print("\n{Back.RED}{Fore.WHITE}This API key is not attached to a premium account and hence this script cannot be "
                                   "used to obtain download links.")
                             die_func()
                         else:
                             # mod not available
-                            print(f"        Mod unavailable")
+                            print(f"{Fore.RED}        Mod unavailable")
                             break
                     else:
                         logger.error(f"Cannot parse response from Nexus API - {r.text}, {r.status_code}")
                         die_func()
 
-            print("        Got download link")
+            print("{Fore.GREEN}        Got download link")
 
             try:
                 j = r.json()
@@ -216,7 +225,7 @@ with logger.catch():
                 logger.error(f"Link insertion for DB mod {db_mod_id} failed - '{r.text}', {r.status_code}")
                 die_func()
 
-            print(f"    Insertion for DB mod ID {db_mod_id} successful.")
+            print(f"{Back.GREEN}{Fore.BLACK}    Insertion for DB mod ID {db_mod_id} successful.")
 
         print("Mod link sync finished for this mod")
 
