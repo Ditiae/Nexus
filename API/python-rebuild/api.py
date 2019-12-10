@@ -237,6 +237,8 @@ def create():
 
     conn.commit()
 
+    cursor.close()
+
     return success_frame("Success!", 200)
 
 @logger.catch()
@@ -253,7 +255,6 @@ def link_add():
         return internal_server_error("")
 
     valid_fields = ["mod_id", "download_url"]
-    inputs = {}
 
     cr = check_required(valid_fields, post_args)
     if cr is not True:
@@ -280,4 +281,58 @@ def link_add():
 
     conn.commit()
 
+    cursor.close()
+
     return success_frame("Success!", 201)
+
+@logger.catch()
+@app.route("/nexusmod/link/remove/", methods=["POST"])
+def link_remove():
+    post_args = copy.deepcopy(request.form)
+
+    ca = check_auth(post_args)
+    if ca is not True:
+        return ca
+
+    conn = connect_to_database()
+    if not conn:
+        return internal_server_error("")
+
+    valid_fields = ["mod_id"]
+
+    cr = check_required(valid_fields, post_args)
+    if cr is not True:
+        return cr
+
+    inputs = organise_inputs(valid_fields, post_args)
+
+    cf = check_float(valid_fields, inputs)
+    if cf is not True:
+        return cf
+
+    # check if an entry exists with the specified mod
+    cursor = conn.cursor()
+
+    query = ("SELECT count(*) as count FROM skyrim_downloads WHERE mod_id = %s")
+
+    cursor.execute(query, (inputs["mod_id"],))
+
+    for (count) in cursor:
+        if count[0] == 0:
+            return error_frame("No entry exists with specified ID", 404)
+
+    cursor.close()
+
+    # make actual query
+
+    cursor = conn.cursor()
+
+    query = ("DELETE FROM skyrim_downloads WHERE mod_id = %s LIMIT 1")
+
+    cursor.execute(query, (inputs["mod_id"],))
+
+    conn.commit()
+
+    cursor.close()
+
+    return success_frame("Success!", 200)
