@@ -23,6 +23,7 @@ with logger.catch():
 
     app = Flask(__name__)
 
+
 @logger.catch()
 def check_auth(rf):
     if "key" not in rf:
@@ -33,6 +34,7 @@ def check_auth(rf):
         return error_frame("Invalid authentication key", 403)
     else:
         return True
+
 
 @logger.catch()
 def connect_to_database():
@@ -50,6 +52,7 @@ def connect_to_database():
             logger.exception("MySQL - Generic error")
     return c
 
+
 # API helper functions
 @logger.catch()
 def val_strings(vals):
@@ -61,12 +64,14 @@ def val_strings(vals):
 
     return (value_string[:-1], mark_string[:-1])
 
+
 @logger.catch()
 def check_required(vals, inputs):
     for i in vals:
         if i not in inputs:
             return error_frame(f"{i} missing in POST", 400)
     return True
+
 
 @logger.catch()
 def check_float(vals, inputs):
@@ -77,6 +82,7 @@ def check_float(vals, inputs):
             except ValueError:
                 return error_frame(f"{i} must be a floating point number", 400)
     return True
+
 
 @logger.catch()
 def check_integer(vals, inputs):
@@ -91,6 +97,7 @@ def check_integer(vals, inputs):
                 return True if a == b else error_frame(f"{i} must be an integer number", 400)
     return True
 
+
 @logger.catch()
 def check_boolean(vals, inputs):
     for i in vals:
@@ -98,6 +105,7 @@ def check_boolean(vals, inputs):
             if inputs[i] not in ["0", "1"]:
                 return error_frame(f"{i} can only accept 1, 0, true, false, or null", 400)
     return True
+
 
 @logger.catch()
 def check_json(vals, inputs):
@@ -109,22 +117,35 @@ def check_json(vals, inputs):
                 return error_frame(f"{i} must be valid JSON")
     return True
 
+
 # standard response frames
 @logger.catch()
-def error_frame(e, code):
+def error_frame(e, code, show_content=False):
+    if show_content:
+        jresp = {"message": e, "status": "error"}
+    else:
+        jresp = {"message": e, "status": "error", "content": None}
+
     return app.response_class(
-        response=json.dumps({"message": e, "status": "error"}),
+        response=json.dumps(jresp),
         status=code,
         mimetype='application/json'
     )
 
+
 @logger.catch()
-def success_frame(e, code):
+def success_frame(e, code, content=False):
+    if not content:
+        jresp = {"message": e, "status": "ok"}
+    else:
+        jresp = {"message": e, "status": "ok", "conent": content}
+
     return app.response_class(
-        response=json.dumps({"message": e, "status": "ok"}),
+        response=json.dumps(jresp),
         status=code,
         mimetype='application/json'
     )
+
 
 @logger.catch()
 def organise_inputs(fields, values, ignore_boolean=True):
@@ -142,6 +163,7 @@ def organise_inputs(fields, values, ignore_boolean=True):
             proto[i] = values[i]
     return proto
 
+
 @logger.catch()
 def validate_url(url):
     regex = re.compile(r'^(?:http|ftp)s?://(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::\d+)?(?:/?|[/?]\S+)$', re.IGNORECASE)
@@ -155,21 +177,25 @@ def validate_url(url):
 def method_not_allowed(e):
     return error_frame("The server could not understand the request", 400)
 
+
 @logger.catch()
 @app.errorhandler(405)
 def method_not_allowed(e):
     return error_frame("Method not allowed", 405)
+
 
 @logger.catch()
 @app.errorhandler(500)
 def internal_server_error(e):
     return error_frame("Internal server error", 500)
 
+
 # endpoints
 @logger.catch()
 @app.route("/")
 def root():
     return error_frame("Forbidden", 403)
+
 
 @logger.catch()
 @app.route("/nexusmod/create/", methods=["POST"])
@@ -241,6 +267,7 @@ def create():
 
     return success_frame("Success!", 200)
 
+
 @logger.catch()
 @app.route("/nexusmod/link/add/", methods=["POST"])
 def link_add():
@@ -284,6 +311,7 @@ def link_add():
     cursor.close()
 
     return success_frame("Success!", 201)
+
 
 @logger.catch()
 @app.route("/nexusmod/link/remove/", methods=["POST"])
@@ -337,6 +365,7 @@ def link_remove():
 
     return success_frame("Success!", 200)
 
+
 @logger.catch()
 @app.route("/nexusmod/link/select/", methods=["POST"])
 def link_select():
@@ -361,10 +390,12 @@ def link_select():
 
     rows = cursor.fetchall()
 
+    cursor.close()
+
     if len(rows) == 0:
         content = None
         message = "No rows exist in database"
-        response_code = 404#
+        response_code = 404
         status = "error"
     else:
         content["mod_id"] = rows[0][0]
@@ -379,3 +410,51 @@ def link_select():
         status=response_code,
         mimetype='application/json'
     )
+
+
+@logger.catch()
+@app.route("/nexusmod/select/", methods=["POST"])
+def select():
+    post_args = copy.deepcopy(request.form)
+
+    ca = check_auth(post_args)
+    if ca is not True:
+        return ca
+
+    conn = connect_to_database()
+    if not conn:
+        return internal_server_error("")
+
+    valid_fields = ["mod_id"]
+
+    cr = check_required(valid_fields, post_args)
+    if cr is not True:
+        return cr
+
+    cf = check_float(["mod_id"], post_args)
+    if cf is not True:
+        return cf
+
+
+    cursor = conn.cursor()
+
+    query = ("SELECT mod_id, file_id, category_name FROM skyrim WHERE mod_id = %s")
+    cursor.execute(query, (post_args["mod_id"],))
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+
+    print(len(rows))
+    print(rows)
+
+    if len(rows) == 0:
+        return error_frame("No rows exist in database", 404, show_content=True)
+    else:
+        content = {}
+
+        content["mod_id"] = rows[0][0]
+        content["file_id"] = rows[0][1]
+        content["category_name"] = rows[0][2]
+
+        return success_frame("Success!", 200, content=content)
