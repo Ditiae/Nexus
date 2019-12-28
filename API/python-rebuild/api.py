@@ -336,3 +336,46 @@ def link_remove():
     cursor.close()
 
     return success_frame("Success!", 200)
+
+@logger.catch()
+@app.route("/nexusmod/link/select/", methods=["POST"])
+def link_select():
+    post_args = copy.deepcopy(request.form)
+
+    ca = check_auth(post_args)
+    if ca is not True:
+        return ca
+
+    conn = connect_to_database()
+    if not conn:
+        return internal_server_error("")
+
+    cursor = conn.cursor()
+
+    content = {}
+    message = "Success!"
+    status = "ok"  # can also be "error"
+    response_code = 200
+
+    cursor.execute("SELECT skyrim_downloads.*, skyrim.mod_name, skyrim.mod_version, skyrim.file_id FROM skyrim_downloads JOIN skyrim ON skyrim.mod_id = skyrim_downloads.mod_id LIMIT 1")
+
+    rows = cursor.fetchall()
+
+    if len(rows) == 0:
+        content = None
+        message = "No rows exist in database"
+        response_code = 404#
+        status = "error"
+    else:
+        content["mod_id"] = rows[0][0]
+        content["download_url"] = rows[0][1]
+        content["mod_name"] = rows[0][2]
+        content["mod_version"] = rows[0][3]
+        content["file_id"] = rows[0][4]
+
+    # modified error_frame
+    return app.response_class(
+        response=json.dumps({"message": message, "status": status, "content": content}),
+        status=response_code,
+        mimetype='application/json'
+    )
