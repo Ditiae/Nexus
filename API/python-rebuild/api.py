@@ -192,7 +192,7 @@ def internal_server_error(e):
 
 # endpoints
 @logger.catch()
-@app.route("/")
+@app.route("/nexusmod/")
 def root():
     return error_frame("Forbidden", 403)
 
