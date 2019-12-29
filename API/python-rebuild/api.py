@@ -62,7 +62,7 @@ def val_strings(vals):
         value_string += f"{f},"
         mark_string += "%s,"
 
-    return (value_string[:-1], mark_string[:-1])
+    return value_string[:-1], mark_string[:-1]
 
 
 @logger.catch()
@@ -299,15 +299,10 @@ def link_add():
 
     # insert into
     cursor = conn.cursor()
-
     value_string, mark_string = val_strings(valid_fields)
-
     query = (f"REPLACE INTO skyrim_downloads ({value_string}) VALUES ({mark_string})")
-
     cursor.execute(query, tuple(inputs[val] for val in inputs))
-
     conn.commit()
-
     cursor.close()
 
     return success_frame("Success!", 201)
@@ -352,15 +347,10 @@ def link_remove():
     cursor.close()
 
     # make actual query
-
     cursor = conn.cursor()
-
     query = ("DELETE FROM skyrim_downloads WHERE mod_id = %s LIMIT 1")
-
     cursor.execute(query, (inputs["mod_id"],))
-
     conn.commit()
-
     cursor.close()
 
     return success_frame("Success!", 200)
@@ -380,11 +370,8 @@ def link_select():
         return internal_server_error("")
 
     cursor = conn.cursor()
-
     cursor.execute("SELECT skyrim_downloads.*, skyrim.mod_name, skyrim.mod_version, skyrim.file_id FROM skyrim_downloads JOIN skyrim ON skyrim.mod_id = skyrim_downloads.mod_id LIMIT 1")
-
     rows = cursor.fetchall()
-
     cursor.close()
 
     if len(rows) == 0:
@@ -426,16 +413,10 @@ def select():
 
 
     cursor = conn.cursor()
-
     query = ("SELECT mod_id, file_id, category_name FROM skyrim WHERE mod_id = %s")
     cursor.execute(query, (post_args["mod_id"],))
-
     rows = cursor.fetchall()
-
     cursor.close()
-
-    print(len(rows))
-    print(rows)
 
     if len(rows) == 0:
         return error_frame("No rows exist in database", 404, show_content=True)
@@ -447,3 +428,64 @@ def select():
         content["category_name"] = rows[0][2]
 
         return success_frame("Success!", 200, content=content)
+
+
+@logger.catch()
+@app.route("/nexusmod/update/", methods=["POST"])
+def update():
+    post_args = copy.deepcopy(request.form)
+
+    ca = check_auth(post_args)
+    if ca is not True:
+        return ca
+
+    conn = connect_to_database()
+    if not conn:
+        return internal_server_error("")
+
+    valid_fields = ["mod_id", "mod_name", "mod_desc", "mod_version", "file_id", "size_kb", "category_name", "adult_content", "content_preview", "uploaded_time", "external_virus_scan_url"]
+    allowable_categories = ["NOT FOUND", "HIDDEN MOD", "NO FILES", "NOT PUBLISHED", "UNDER MODERATION", "NON"]
+
+    cr = check_required(["mod_id"], post_args)
+    if cr is not True:
+        return cr
+
+    inputs = organise_inputs(valid_fields, post_args)
+
+    ci = check_integer(["file_id", "size_kb", "uploaded_time"], inputs)
+    if ci is not True:
+        return ci
+
+    cb = check_boolean(["adult_content"], inputs)
+    if cb is not True:
+        return cb
+
+    cf = check_float(["mod_id"], inputs)
+    if cf is not True:
+        return cf
+
+    cj = check_json(["content_preview"], inputs)
+    if cj is not True:
+        return cf
+
+    # check if ID already exists, and if so, determine if it's got one of the required categories for update
+    cursor = conn.cursor()
+    query = ("SELECT category_name FROM skyrim WHERE mod_id=%s")
+    cursor.execute(query, (inputs["mod_id"],))
+    rows = cursor.fetchall()
+    cursor.close()
+
+    if len(rows) == 0:
+        return error_frame("No entry with that mod_id exists.", 404)
+    elif rows[0][0] not in allowable_categories:
+        return error_frame("The entry has been found, but the category name does not allow updates to that row", 400)
+
+    cursor = conn.cursor()
+    value_string, mark_string = val_strings(valid_fields)
+    query = (f"REPLACE INTO skyrim ({value_string}) VALUES ({mark_string})")
+    cursor.execute(query, tuple(inputs[x] for x in inputs))
+    conn.commit()
+    cursor.close()
+
+    return success_frame("Success!", 200)
+
