@@ -1,0 +1,8 @@
+{
+  "db-creds": {
+    "user": "username",
+    "password": "password",
+    "host": "host",
+    "database": "dbname"
+  }
+}

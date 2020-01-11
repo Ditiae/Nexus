@@ -14,7 +14,6 @@ with logger.catch():
     with open("settings.json") as f:
         SETTINGS = json.load(f)
 
-    #with open(SETTINGS["auth-file"]) as f:
     with open("auth.csv") as f:
         rows = [row for row in csv.reader(f)]
 
