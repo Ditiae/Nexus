@@ -3,3 +3,4 @@ loguru
 beautifulsoup4
 colorama
 tqdm
+mysql-connector-python
