@@ -23,8 +23,12 @@ with logger.catch():
         API_URL = settings["base_api_url"]
         GAME = settings["game"]
         minmax = input("Input range of mods to scrape: ")
-        minmax = re.split(',-', minmax)
-        run_range = range(minmax[0], minmax[1])
+        o = []
+        for item in minmax.split("," if "," in minmax else "-"):
+            o.append(int(item.strip()))
+        #minmax = re.split(',-', minmax)
+        run_range = range(o[0], o[1])
+
 
     # key switching setup
     API_KEY = settings["api_key"]
