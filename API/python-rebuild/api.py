@@ -5,25 +5,25 @@ import json
 import csv
 import mysql.connector
 from mysql.connector import errorcode
-from loguru import logger
 import copy
+import platform
+import os
 
-logger.add("error.log", level="ERROR")
+if platform.system() == "Linux":
+	os.chdir("/var/www/nexusapi")
 
-with logger.catch():
-    with open("settings.json") as f:
-        SETTINGS = json.load(f)
+with open("settings.json") as f:
+    SETTINGS = json.load(f)
 
-    with open("auth.csv") as f:
-        rows = [row for row in csv.reader(f)]
+with open("auth.csv") as f:
+    rows = [row for row in csv.reader(f)]
 
-        invalid_auth = [row[1] for row in rows if int(row[2]) == 0]
-        AUTH = [row[1] for row in rows if int(row[2]) == 1]
+    invalid_auth = [row[1] for row in rows if int(row[2]) == 0]
+    AUTH = [row[1] for row in rows if int(row[2]) == 1]
 
-    app = Flask(__name__)
+app = Flask(__name__)
 
 
-@logger.catch()
 def check_auth(rf):
     if "key" not in rf:
         return error_frame("Specify an authentication key", 400)
@@ -35,7 +35,6 @@ def check_auth(rf):
         return True
 
 
-@logger.catch()
 def connect_to_database():
     try:
         c = mysql.connector.connect(**SETTINGS["db-creds"])
@@ -53,7 +52,6 @@ def connect_to_database():
 
 
 # API helper functions
-@logger.catch()
 def val_strings(vals):
     value_string = ""
     mark_string = ""
@@ -64,7 +62,6 @@ def val_strings(vals):
     return value_string[:-1], mark_string[:-1]
 
 
-@logger.catch()
 def check_required(vals, inputs):
     for i in vals:
         if i not in inputs:
@@ -72,7 +69,6 @@ def check_required(vals, inputs):
     return True
 
 
-@logger.catch()
 def check_float(vals, inputs):
     for i in vals:
         if inputs[i] is not None:
@@ -83,7 +79,6 @@ def check_float(vals, inputs):
     return True
 
 
-@logger.catch()
 def check_integer(vals, inputs):
     for i in vals:
         if inputs[i] is not None:
@@ -97,7 +92,6 @@ def check_integer(vals, inputs):
     return True
 
 
-@logger.catch()
 def check_boolean(vals, inputs):
     for i in vals:
         if inputs[i] is not None:
@@ -106,7 +100,6 @@ def check_boolean(vals, inputs):
     return True
 
 
-@logger.catch()
 def check_json(vals, inputs):
     for i in vals:
         if inputs[i] is not None:
@@ -118,7 +111,6 @@ def check_json(vals, inputs):
 
 
 # standard response frames
-@logger.catch()
 def error_frame(e, code, show_content=False):
     if show_content:
         jresp = {"message": e, "status": "error"}
@@ -132,7 +124,6 @@ def error_frame(e, code, show_content=False):
     )
 
 
-@logger.catch()
 def success_frame(e, code, content=False):
     if not content:
         jresp = {"message": e, "status": "ok"}
@@ -146,7 +137,6 @@ def success_frame(e, code, content=False):
     )
 
 
-@logger.catch()
 def organise_inputs(fields, values, ignore_boolean=True):
     proto = {}
     for i in fields:
@@ -163,7 +153,6 @@ def organise_inputs(fields, values, ignore_boolean=True):
     return proto
 
 
-@logger.catch()
 def validate_url(url):
     regex = re.compile(r'^(?:http|ftp)s?://(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::\d+)?(?:/?|[/?]\S+)$', re.IGNORECASE)
     return re.match(regex, url) is not None
@@ -171,33 +160,28 @@ def validate_url(url):
 
 # the below two errorhandlers are if the errors are thrown by flask, eg trying to send a GET request to a post only
 # endpoint
-@logger.catch()
 @app.errorhandler(400)
 def method_not_allowed(e):
     return error_frame("The server could not understand the request", 400)
 
 
-@logger.catch()
 @app.errorhandler(405)
 def method_not_allowed(e):
     return error_frame("Method not allowed", 405)
 
 
-@logger.catch()
 @app.errorhandler(500)
 def internal_server_error(e):
     return error_frame("Internal server error", 500)
 
 
 # endpoints
-@logger.catch()
-@app.route("/nexusmod/")
+@app.route("/")
 def root():
     return error_frame("Forbidden", 403)
 
 
-@logger.catch()
-@app.route("/nexusmod/create/", methods=["POST"])
+@app.route("/create/", methods=["POST"])
 def create():
     post_args = copy.deepcopy(request.form)
 
@@ -267,8 +251,7 @@ def create():
     return success_frame("Success!", 200)
 
 
-@logger.catch()
-@app.route("/nexusmod/link/add/", methods=["POST"])
+@app.route("/link/add/", methods=["POST"])
 def link_add():
     post_args = copy.deepcopy((request.form))
 
@@ -307,8 +290,7 @@ def link_add():
     return success_frame("Success!", 201)
 
 
-@logger.catch()
-@app.route("/nexusmod/link/remove/", methods=["POST"])
+@app.route("/link/remove/", methods=["POST"])
 def link_remove():
     post_args = copy.deepcopy(request.form)
 
@@ -355,8 +337,7 @@ def link_remove():
     return success_frame("Success!", 200)
 
 
-@logger.catch()
-@app.route("/nexusmod/link/select/", methods=["POST"])
+@app.route("/link/select/", methods=["POST"])
 def link_select():
     post_args = copy.deepcopy(request.form)
 
@@ -387,8 +368,7 @@ def link_select():
         return success_frame("Success!", 200, content=content)
 
 
-@logger.catch()
-@app.route("/nexusmod/select/", methods=["POST"])
+@app.route("/select/", methods=["POST"])
 def select():
     post_args = copy.deepcopy(request.form)
 
@@ -429,8 +409,7 @@ def select():
         return success_frame("Success!", 200, content=content)
 
 
-@logger.catch()
-@app.route("/nexusmod/update/", methods=["POST"])
+@app.route("/update/", methods=["POST"])
 def update():
     post_args = copy.deepcopy(request.form)
 
