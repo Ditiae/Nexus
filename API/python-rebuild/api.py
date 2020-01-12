@@ -138,7 +138,7 @@ def success_frame(e, code, content=False):
     )
 
 
-def organise_inputs(fields, values, ignore_boolean=True):
+def organise_inputs(fields, values, ignore_boolean=False):
     proto = {}
     for i in fields:
         if (i not in values):
