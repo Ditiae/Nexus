@@ -2,7 +2,7 @@ import sys
 import time
 from datetime import datetime
 import json
-
+import re
 import requests
 from loguru import logger
 from colorama import Fore, Back, init
@@ -22,7 +22,13 @@ with logger.catch():
         AUTH_KEY = settings["auth_key"]
         API_URL = settings["base_api_url"]
         GAME = settings["game"]
-        run_range = range(settings["range"][0], settings["range"][1])
+        minmax = input("Input range of mods to scrape: ")
+        o = []
+        for item in minmax.split("," if "," in minmax else "-"):
+            o.append(int(item.strip()))
+        #minmax = re.split(',-', minmax)
+        run_range = range(o[0], o[1])
+
 
     # key switching setup
     API_KEY = settings["api_key"]

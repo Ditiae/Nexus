@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 import requests
 import json
+import re
 from bs4 import BeautifulSoup
 from loguru import logger
 
@@ -18,7 +19,12 @@ with logger.catch():
         AUTH_KEY = settings["auth_key"]
         API_URL = settings["base_api_url"]
         GAME = settings["game"]
-        checkrange = range(settings["range"][0], settings["range"][1])
+        minmax = input("Input range of mods to scrape: ")
+        o = []
+        for item in minmax.split("," if "," in minmax else "-"):
+            o.append(int(item.strip()))
+        #minmax = re.split(',-', minmax)
+        run_range = range(o[0], o[1])
 
     API_KEY = settings["api_key"]
     if (type(API_KEYS) == str) or ((len(API_KEYS) == 1) and (type(API_KEYS) == list)):  # if the API keys entry in the
@@ -106,7 +112,7 @@ with logger.catch():
                 wait_for_api_requests(hreset)
 
 
-    for mod_id in checkrange:
+    for mod_id in run_range:
         print(f"\nMod number: {mod_id}!")
         html = str(BeautifulSoup(requests.get(f"https://www.nexusmods.com/{GAME}/mods/{mod_id}").content,
                                  features="html.parser").h3)
