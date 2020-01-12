@@ -8,6 +8,7 @@ from mysql.connector import errorcode
 import copy
 import platform
 import os
+from loguru import logger
 
 if platform.system() == "Linux":
 	os.chdir("/var/www/nexusapi")
@@ -112,7 +113,7 @@ def check_json(vals, inputs):
 
 # standard response frames
 def error_frame(e, code, show_content=False):
-    if show_content:
+    if not show_content:
         jresp = {"message": e, "status": "error"}
     else:
         jresp = {"message": e, "status": "error", "content": None}
