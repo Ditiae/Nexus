@@ -238,15 +238,10 @@ def create():
 
     # actually insert
     cursor = conn.cursor()
-
     value_string, mark_string = val_strings(valid_fields)
-
     query = (f"INSERT INTO skyrim ({value_string}) VALUES ({mark_string})")
-
     cursor.execute(query, tuple(inputs[val] for val in inputs))
-
     conn.commit()
-
     cursor.close()
 
     return success_frame("Success!", 200)
