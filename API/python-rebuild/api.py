@@ -52,6 +52,19 @@ def connect_to_database():
     return c
 
 
+def db_query(query, values, connection, commit=False):
+    cursor = connection.cursor()
+    cursor.execute(query, tuple(values))
+    if commit:
+        connection.commit()
+    try:
+        r = cursor.fetchall()
+    except mysql.connector.errors.InterfaceError:
+        r = []
+    cursor.close()
+    return r
+
+
 # API helper functions
 def val_strings(vals):
     value_string = ""
@@ -226,27 +239,20 @@ def create():
         return cj
 
     # check if ID already exists, and if so, stop
-    cursor = conn.cursor()
-    query = ("SELECT * FROM skyrim WHERE mod_id=%s")
 
-    cursor.execute(query, (inputs["mod_id"],))
+    rows = db_query("SELECT * FROM skyrim WHERE mod_id=%s", [inputs["mod_id"]], conn)
 
-    if len(cursor.fetchall()) != 0:
+    if len(rows) != 0:
         return error_frame("An entry with that mod ID already exists", 400)
 
-    cursor.close()
-
     # actually insert
-    cursor = conn.cursor()
     value_string, mark_string = val_strings(valid_fields)
-    query = (f"INSERT INTO skyrim ({value_string}) VALUES ({mark_string})")
-    cursor.execute(query, tuple(inputs[val] for val in inputs))
-    conn.commit()
-    cursor.close()
+    db_query(f"INSERT INTO skyrim ({value_string}) VALUES ({mark_string})", [inputs[val] for val in inputs], conn, commit=True)
 
     return success_frame("Success!", 200)
 
 
+"""
 @app.route("/link/add/", methods=["POST"])
 def link_add():
     post_args = copy.deepcopy((request.form))
@@ -276,12 +282,8 @@ def link_add():
         return error_frame("download_url must be a valid URL and must not refrence localhost", 400)
 
     # insert into
-    cursor = conn.cursor()
     value_string, mark_string = val_strings(valid_fields)
-    query = (f"REPLACE INTO skyrim_downloads ({value_string}) VALUES ({mark_string})")
-    cursor.execute(query, tuple(inputs[val] for val in inputs))
-    conn.commit()
-    cursor.close()
+    db_query(f"REPLACE INTO skyrim_downloads ({value_string}) VALUES ({mark_string})", [inputs[val] for val in inputs], conn, commit=True)
 
     return success_frame("Success!", 201)
 
@@ -311,24 +313,14 @@ def link_remove():
         return cf
 
     # check if an entry exists with the specified mod
-    cursor = conn.cursor()
+    rows = db_query("SELECT count(*) as count FROM skyrim_downloads WHERE mod_id = %s", [inputs["mod_id"]], conn)
 
-    query = ("SELECT count(*) as count FROM skyrim_downloads WHERE mod_id = %s")
-
-    cursor.execute(query, (inputs["mod_id"],))
-
-    for (count) in cursor:
-        if count[0] == 0:
+    for row in rows:
+        if row[0] == 0:
             return error_frame("No entry exists with specified ID", 404)
 
-    cursor.close()
-
     # make actual query
-    cursor = conn.cursor()
-    query = ("DELETE FROM skyrim_downloads WHERE mod_id = %s LIMIT 1")
-    cursor.execute(query, (inputs["mod_id"],))
-    conn.commit()
-    cursor.close()
+    db_query("DELETE FROM skyrim_downloads WHERE mod_id = %s LIMIT 1", [inputs["mod_id"]], conn, commit=True)
 
     return success_frame("Success!", 200)
 
@@ -345,14 +337,11 @@ def link_select():
     if not conn:
         return internal_server_error("")
 
-    cursor = conn.cursor()
-    cursor.execute("SELECT skyrim_downloads.*, skyrim.mod_name, skyrim.mod_version, skyrim.file_id FROM skyrim_downloads JOIN skyrim ON skyrim.mod_id = skyrim_downloads.mod_id LIMIT 1")
-    rows = cursor.fetchall()
-    cursor.close()
+    rows = db_query("SELECT skyrim_downloads.*, skyrim.mod_name, skyrim.mod_version, skyrim.file_id FROM skyrim_downloads "
+                 "JOIN skyrim ON skyrim.mod_id = skyrim_downloads.mod_id LIMIT 1", [], conn)
 
     if len(rows) == 0:
         return error_frame("No rows exist in database", 404, show_content=True)
-
     else:
         content = {}
         content["mod_id"] = rows[0][0]
@@ -362,6 +351,7 @@ def link_select():
         content["file_id"] = rows[0][4]
 
         return success_frame("Success!", 200, content=content)
+"""
 
 
 @app.route("/select/", methods=["POST"])
@@ -387,11 +377,7 @@ def select():
         return cf
 
 
-    cursor = conn.cursor()
-    query = ("SELECT mod_id, file_id, category_name FROM skyrim WHERE mod_id = %s")
-    cursor.execute(query, (post_args["mod_id"],))
-    rows = cursor.fetchall()
-    cursor.close()
+    rows = db_query("SELECT mod_id, file_id, category_name FROM skyrim WHERE mod_id = %s", [post_args["mod_id"]], conn, commit=True)
 
     if len(rows) == 0:
         return error_frame("No rows exist in database", 404, show_content=True)
@@ -443,23 +429,73 @@ def update():
         return cf
 
     # check if ID already exists, and if so, determine if it's got one of the required categories for update
-    cursor = conn.cursor()
-    query = ("SELECT category_name FROM skyrim WHERE mod_id=%s")
-    cursor.execute(query, (inputs["mod_id"],))
-    rows = cursor.fetchall()
-    cursor.close()
+    rows = db_query("SELECT category_name FROM skyrim WHERE mod_id=%s", [inputs["mod_id"]], conn)
 
     if len(rows) == 0:
         return error_frame("No entry with that mod_id exists.", 404)
     elif rows[0][0] not in allowable_categories:
         return error_frame("The entry has been found, but the category name does not allow updates to that row", 400)
 
-    cursor = conn.cursor()
     value_string, mark_string = val_strings(valid_fields)
-    query = (f"REPLACE INTO skyrim ({value_string}) VALUES ({mark_string})")
-    cursor.execute(query, tuple(inputs[x] for x in inputs))
-    conn.commit()
-    cursor.close()
+    db_query(f"REPLACE INTO skyrim ({value_string}) VALUES ({mark_string})", [inputs[val] for val in inputs], conn, commit=True)
 
     return success_frame("Success!", 200)
 
+
+def dl_prog_comp_combi(type):
+    # Combo function for dl_progress and dl_copmleted
+    # type should be either "progress" or "completed"
+
+    post_args = copy.deepcopy(request.form)
+
+    ca = check_auth(post_args)
+    if ca is not True:
+        return ca
+
+    conn = connect_to_database()
+    if not conn:
+        return internal_server_error("")
+
+    valid_fields = ["mod_id", "state"]
+
+    cr = check_required(valid_fields, post_args)
+    if cr is not True:
+        return cr
+
+    inputs = organise_inputs(valid_fields, post_args)
+
+    cb = check_boolean(["state"], inputs)
+    if cb is not True:
+        return cb
+
+    cf = check_float(["mod_id"], inputs)
+    if cf is not True:
+        return cf
+
+    # Check specified mod exists
+    rows = db_query("SELECT count(*) as count FROM skyrim WHERE mod_id = %s", [inputs["mod_id"]], conn)
+    for row in rows:
+        if row[0] == 0:
+            return error_frame("No entry exists with specified ID", 404)
+
+    # modify row
+    if type == "progress":
+        query = "REPLACE INTO skyrim (mod_id, dl_progress) VALUES (%s, %s)"
+    elif type == "completed":
+        query = "REPLACE INTO skyrim (mod_id, dl_completed) VALUES (%s, %s)"
+    else:
+        return error_frame("Internal server error", 500)
+
+    db_query(query, [inputs[val] for val in inputs], conn, commit=True)
+
+    return success_frame("Success!", 200)
+
+
+@app.route("/dl/progress/", methods=["POST"])
+def dl_progress():
+    return dl_prog_comp_combi("progress")
+
+
+@app.route("/dl/completed/", methods=["POST"])
+def dl_completed():
+    return dl_prog_comp_combi("completed")
