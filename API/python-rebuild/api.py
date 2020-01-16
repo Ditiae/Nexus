@@ -142,7 +142,7 @@ def success_frame(e, code, content=False):
     if not content:
         jresp = {"message": e, "status": "ok"}
     else:
-        jresp = {"message": e, "status": "ok", "conent": content}
+        jresp = {"message": e, "status": "ok", "content": content}
 
     return app.response_class(
         response=json.dumps(jresp),
