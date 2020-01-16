@@ -501,7 +501,7 @@ def dl_prog_comp_combi(type):
         if row == (None, None):
             return error_frame("None to download", 404, show_content=True)
 
-        return success_frame("Success!", 200, content={"mod_id": int(str(row[0].split(".")[0])), "file_id": row[1]})
+        return success_frame("Success!", 200, content={"mod_id": int(str(row[0]).split(".")[0]), "file_id": row[1]})
 
     elif type == "completed":
         query = "UPDATE skyrim SET dl_completed = %s WHERE mod_id = %s"
