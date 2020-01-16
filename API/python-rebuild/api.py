@@ -57,10 +57,10 @@ def db_query(query, values, connection, commit=False):
     cursor.execute(query, tuple(values))
     if commit:
         connection.commit()
-    try:
-        r = cursor.fetchall()
-    except mysql.connector.errors.InterfaceError:
-        r = []
+    #try:
+    r = cursor.fetchall()
+    #except mysql.connector.errors.InterfaceError:
+    #    r = []
     cursor.close()
     return r
 
@@ -138,8 +138,8 @@ def error_frame(e, code, show_content=False):
     )
 
 
-def success_frame(e, code, content=False):
-    if not content:
+def success_frame(e, code, content=None):
+    if content is None:
         jresp = {"message": e, "status": "ok"}
     else:
         jresp = {"message": e, "status": "ok", "conent": content}
@@ -456,37 +456,60 @@ def dl_prog_comp_combi(type):
     if not conn:
         return internal_server_error("")
 
-    valid_fields = ["mod_id", "state"]
+    if type == "completed":  # not required for progress
+        valid_fields = ["mod_id", "state"]
 
-    cr = check_required(valid_fields, post_args)
-    if cr is not True:
-        return cr
+        cr = check_required(valid_fields, post_args)
+        if cr is not True:
+            return cr
 
-    inputs = organise_inputs(valid_fields, post_args)
+        inputs = organise_inputs(valid_fields, post_args)
 
-    cb = check_boolean(["state"], inputs)
-    if cb is not True:
-        return cb
+        cb = check_boolean(["state"], inputs)
+        if cb is not True:
+            return cb
 
-    cf = check_float(["mod_id"], inputs)
-    if cf is not True:
-        return cf
+        cf = check_float(["mod_id"], inputs)
+        if cf is not True:
+            return cf
 
-    # Check specified mod exists
-    rows = db_query("SELECT count(*) as count FROM skyrim WHERE mod_id = %s", [inputs["mod_id"]], conn)
-    for row in rows:
-        if row[0] == 0:
-            return error_frame("No entry exists with specified ID", 404)
+        # Check specified mod exists
+        rows = db_query("SELECT count(*) as count FROM skyrim WHERE mod_id = %s", [inputs["mod_id"]], conn)
+        for row in rows:
+            if row[0] == 0:
+                return error_frame("No entry exists with specified ID", 404)
 
     # modify row
     if type == "progress":
-        query = "REPLACE INTO skyrim (mod_id, dl_progress) VALUES (%s, %s)"
+
+        query = """
+        SET @modid = (SELECT mod_id FROM skyrim WHERE dl_progress = 0 AND dl_completed = 0 LIMIT 1);
+        SET @fileid = (SELECT file_id from skyrim WHERE mod_id = @modid);
+        UPDATE skyrim SET dl_progress = 1 WHERE mod_id = @modid;
+        SELECT @modid AS mod_id, @fileid AS file_id;
+        """
+
+        cursor = conn.cursor()
+        for i in cursor.execute(query, tuple, multi=True):
+            one = i.fetchone()
+            if one is not None:
+                row = one
+                break
+        conn.commit()
+        cursor.close()
+
+        if row == (None, None):
+            return error_frame("None to download", 404, show_content=True)
+
+        return success_frame("Success!", 200, content={"mod_id": row[0], "file_id": row[1]})
+
+
     elif type == "completed":
-        query = "REPLACE INTO skyrim (mod_id, dl_completed) VALUES (%s, %s)"
+        query = "UPDATE skyrim SET dl_completed = %s WHERE mod_id = %s"
+        db_query(query, [inputs["state"], inputs["mod_id"]], conn, commit=True)
     else:
         return error_frame("Internal server error", 500)
 
-    db_query(query, [inputs[val] for val in inputs], conn, commit=True)
 
     return success_frame("Success!", 200)
 
