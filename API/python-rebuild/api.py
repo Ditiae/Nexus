@@ -142,7 +142,7 @@ def success_frame(e, code, content=None):
     if content is None:
         jresp = {"message": e, "status": "ok"}
     else:
-        jresp = {"message": e, "status": "ok", "conent": content}
+        jresp = {"message": e, "status": "ok", "content": content}
 
     return app.response_class(
         response=json.dumps(jresp),
@@ -502,7 +502,6 @@ def dl_prog_comp_combi(type):
             return error_frame("None to download", 404, show_content=True)
 
         return success_frame("Success!", 200, content={"mod_id": row[0], "file_id": row[1]})
-
 
     elif type == "completed":
         query = "UPDATE skyrim SET dl_completed = %s WHERE mod_id = %s"
