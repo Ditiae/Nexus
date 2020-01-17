@@ -26,8 +26,11 @@ def _form_output(p, m):
     else:
         o += f"{p}]"
     lio = ""
-    for i in m:
-        lio += str(i) + " "
+    if m is not None:
+        for i in m:
+            lio += str(i) + " "
+    else:
+        lio = ""
     o += (" " + lio)
     return o
 
