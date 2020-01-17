@@ -486,7 +486,7 @@ def dl_prog_comp_combi(type):
         SET @modid = (SELECT mod_id FROM skyrim WHERE dl_progress = 0 AND dl_completed = 0 LIMIT 1);
         SET @fileid = (SELECT file_id from skyrim WHERE mod_id = @modid);
         UPDATE skyrim SET dl_progress = 1 WHERE mod_id = @modid;
-        SELECT @modid AS mod_id, @fileid AS file_id;
+        SELECT @modid AS mod_id, @fileid AS file_id, mod_name, mod_version FROM skyrim WHERE mod_id=@modid;
         """
 
         cursor = conn.cursor()
@@ -498,10 +498,15 @@ def dl_prog_comp_combi(type):
         conn.commit()
         cursor.close()
 
-        if row == (None, None):
+        if row == (None, None, None, None):
             return error_frame("None to download", 404, show_content=True)
 
-        return success_frame("Success!", 200, content={"mod_id": int(str(row[0]).split(".")[0]), "file_id": row[1]})
+        return success_frame("Success!", 200, content={
+            "mod_id": int(str(row[0]).split(".")[0]),
+            "file_id": row[1],
+            "mod_name": row[2],
+            "mod_version": row[3]
+        })
 
     elif type == "completed":
         query = "UPDATE skyrim SET dl_completed = %s WHERE mod_id = %s"
