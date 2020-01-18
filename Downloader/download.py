@@ -8,12 +8,14 @@ from loguru import logger
 import os
 import zipfile
 import json
-from common import iprint, aprint, rprint, qprint, eprint, qcol
+from common import iprint, aprint, qprint, eprint, qcol
 
-#logger.remove(0)  # remove output to stderr DEBUG
+
+# logger.remove(0)  # remove output to stderr DEBUG
 logger.add("error.log", level="ERROR")
 _old_print = print
 print = iprint
+
 
 # ----- FUNCTIONS -----
 def parse_api_time(date):
@@ -72,10 +74,10 @@ def check_api_ratelimits(daily, hourly, hreset):
             # Hence, if the next API key has been used, and the limits are under the threshold, wait.
 
             # Get current ratelimits
-            r = requests.get("https://api.nexusmods.com/v1/users/validate.json", headers=nexus_headers)
+            req = requests.get("https://api.nexusmods.com/v1/users/validate.json", headers=nexus_headers)
 
-            if API_KEYS[CURRENT_API_KEY][1] is not None and ((int(r.headers['x-rl-daily-remaining']) < 5) and
-                                                             (int(r.headers['x-rl-hourly-remaining']) < 5)):
+            if API_KEYS[CURRENT_API_KEY][1] is not None and ((int(req.headers['x-rl-daily-remaining']) < 5) and
+                                                             (int(req.headers['x-rl-hourly-remaining']) < 5)):
                 wait_for_api_requests(API_KEYS[CURRENT_API_KEY][1])
 
         else:
@@ -108,7 +110,9 @@ def make_directory(*args):
 
 # load settings
 with logger.catch():
-    init(autoreset=True)  # colorama init
+
+    print("Nexus downloader")
+    print("Loading settings")
 
     with open("settings.json") as f:
         SETTINGS = json.load(f)
@@ -118,8 +122,14 @@ with logger.catch():
     API_URL = SETTINGS["endpoint"]
     GAME = SETTINGS["game"]
     DOWNLOAD_DIRECTORY = SETTINGS["download_folder"]
+    RCLONE_REMOTE = SETTINGS["rclone"]["remote_name"]
+    RCLONE_DIRECTORY = SETTINGS["rclone"]["directory"]
+    RCLONE_PROGRESS = SETTINGS["rclone"]["show_progress"]
+
+    print("Checking for download directory")
 
     if not os.path.exists(DOWNLOAD_DIRECTORY):
+        eprint("Not found. Creating")
         make_directory(DOWNLOAD_DIRECTORY)
 
     SELECTED_SERVER = None
@@ -127,6 +137,8 @@ with logger.catch():
     internal_headers = {  # used for internal API
         "key": AUTH_KEY
     }
+
+    print("Initialising key switching")
 
     # key switching setup
     if (type(API_KEYS) == str) or ((len(API_KEYS) == 1) and (type(API_KEYS) == list)):
@@ -143,15 +155,19 @@ with logger.catch():
         'accept': 'applications/json'
     }
 
+    print("OK!\n")
+
 with logger.catch():
     while True:
         # 1: Get next mod
+
+        print("Retrieving next mod")
 
         r = requests.post(get_api_endpoint("dl", "progress"), data=internal_headers)
 
         if not r.ok:
             if r.status_code == 404:
-                print("No mods available. Waiting for 30 seconds.")
+                print("No mods available. Waiting for 30 seconds\n")
                 time.sleep(30)
                 continue
 
@@ -169,17 +185,22 @@ with logger.catch():
             eprint("Exiting now")
             sys.exit()  # TODO: make this do something other than exiting
 
-        mod_id = r_json["content"]["mod_id"]
+        internal_mod_id = r_json["content"]["mod_id"]  # has the weird decimal point thing used in the database
+        real_mod_id = int(str(r_json["content"]["mod_id"]).split(".")[0])  # removes everything past the decimal point
         file_id = r_json["content"]["file_id"]
         mod_name = r_json["content"]["mod_name"]
         mod_version = r_json["content"]["mod_version"]
 
-        print(mod_id, file_id)  # DEBUG
+        print("Mod ID", real_mod_id)
+        print("File ID", file_id)
+        print("Mod name", mod_name)
 
         # 2: Get download link from Nexus
 
-        r = requests.get(f"https://api.nexusmods.com/v1/games/skyrim/mods/{mod_id}/files/{file_id}/download_link.json",
-                         headers=nexus_headers)
+        r = requests.get(
+            f"https://api.nexusmods.com/v1/games/skyrim/mods/{real_mod_id}/files/{file_id}/download_link.json",
+            headers=nexus_headers
+        )
 
         try:
             r_json = r.json()
@@ -220,7 +241,7 @@ with logger.catch():
 
             print(f"Selected server: {SELECTED_SERVER}")
 
-        # TODO: This bit below can probably be improved
+        # TODO: This bit can probably be improved
         if SELECTED_SERVER not in servers_avail:
             eprint("Selected server is not available; defaulting to the Nexus CDN")
             for item in r_json:
@@ -233,20 +254,37 @@ with logger.catch():
 
         # 3: Download mod
 
-        mod_dir = os.path.join(DOWNLOAD_DIRECTORY, GAME, str(mod_id))
+        mod_dir = os.path.join(DOWNLOAD_DIRECTORY, GAME, str(real_mod_id))
         make_directory(mod_dir)
-        zip_name = os.path.join(mod_dir, mod_name + (("-" + mod_version) if mod_version is not None else "") + ".zip")
+        zip_name = os.path.join(mod_dir,
+                                str(file_id) + "-" + mod_name[:25] + (("-" + mod_version) if mod_version is not None else "") + ".zip")
         source_name_from_url = download_link.split('/')[-1].split("?")[0]
 
-        print(f"Begin download of {zip_name}")
+        aprint(f"Begin download of {zip_name}")
         with zipfile.ZipFile(zip_name, "w", compression=zipfile.ZIP_LZMA) as zip_f:
             with zip_f.open(source_name_from_url, "w") as f:
-                with requests.get(download_link.replace(" ", "%20"), stream=True) as r:  # this is supposedly 3x faster than f.write chunk
+                with requests.get(download_link.replace(" ", "%20"), stream=True) as r:
                     shutil.copyfileobj(r.raw, f)
 
         print("Download completed")
 
         # 4: Set status to completed
-        # 5: Zip and rclone file (in separate thread?)
 
-        input("press enter") # DEBUG
+        print("Updating download status")
+
+        r = requests.post(get_api_endpoint("dl", "completed"),
+                          data={**internal_headers, "mod_id": internal_mod_id, "state": True})
+
+        if not r.ok:
+            eprint(f"Error returned from internal API\n{r.status_code} - {r.text}")
+
+        # 5: rclone file (in separate thread?)
+
+        print("Rclone'ing")
+
+        rclone_command = f"rclone move {'-P ' if RCLONE_PROGRESS else ''}{mod_dir} " \
+            f"{RCLONE_REMOTE}:/{RCLONE_DIRECTORY}/{GAME}/{real_mod_id}/"
+
+        os.system(rclone_command)
+
+        print("Complete\n")
