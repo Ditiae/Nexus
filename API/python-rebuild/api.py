@@ -57,10 +57,10 @@ def db_query(query, values, connection, commit=False):
     cursor.execute(query, tuple(values))
     if commit:
         connection.commit()
-    #try:
-    r = cursor.fetchall()
-    #except mysql.connector.errors.InterfaceError:
-    #    r = []
+    try:
+        r = cursor.fetchall()
+    except mysql.connector.errors.InterfaceError:
+        r = []
     cursor.close()
     return r
 
@@ -240,7 +240,7 @@ def create():
 
     # check if ID already exists, and if so, stop
 
-    rows = db_query("SELECT * FROM skyrim WHERE mod_id=%s", [inputs["mod_id"]], conn)
+    rows = db_query("SELECT * FROM skyrim WHERE mod_id`1`=%s", [inputs["mod_id"]], conn)
 
     if len(rows) != 0:
         return error_frame("An entry with that mod ID already exists", 400)
@@ -265,7 +265,7 @@ def link_add():
     if not conn:
         return internal_server_error("")
 
-    valid_fields = ["mod_id", "download_url"]
+    valid_fields = ["mod_id, "download_url"]
 
     cr = check_required(valid_fields, post_args)
     if cr is not True:
@@ -273,7 +273,7 @@ def link_add():
 
     inputs = organise_inputs(valid_fields, post_args)
 
-    cf = check_float(["mod_id"], inputs)
+    cf = check_float(["mod_id], inputs)
     if cf is not True:
         return cf
 
@@ -300,7 +300,7 @@ def link_remove():
     if not conn:
         return internal_server_error("")
 
-    valid_fields = ["mod_id"]
+    valid_fields = ["mod_id]
 
     cr = check_required(valid_fields, post_args)
     if cr is not True:
@@ -313,14 +313,14 @@ def link_remove():
         return cf
 
     # check if an entry exists with the specified mod
-    rows = db_query("SELECT count(*) as count FROM skyrim_downloads WHERE mod_id = %s", [inputs["mod_id"]], conn)
+    rows = db_query("SELECT count(*) as count FROM skyrim_downloads WHERE mod_id = %s", [inputs["mod_id]], conn)
 
     for row in rows:
         if row[0] == 0:
             return error_frame("No entry exists with specified ID", 404)
 
     # make actual query
-    db_query("DELETE FROM skyrim_downloads WHERE mod_id = %s LIMIT 1", [inputs["mod_id"]], conn, commit=True)
+    db_query("DELETE FROM skyrim_downloads WHERE mod_id = %s LIMIT 1", [inputs["mod_id]], conn, commit=True)
 
     return success_frame("Success!", 200)
 
@@ -344,7 +344,7 @@ def link_select():
         return error_frame("No rows exist in database", 404, show_content=True)
     else:
         content = {}
-        content["mod_id"] = rows[0][0]
+        content["mod_id] = rows[0][0]
         content["download_url"] = rows[0][1]
         content["mod_name"] = rows[0][2]
         content["mod_version"] = rows[0][3]
@@ -490,19 +490,23 @@ def dl_prog_comp_combi(type):
         """
 
         cursor = conn.cursor()
-        for i in cursor.execute(query, tuple, multi=True):
-            one = i.fetchone()
-            if one is not None:
-                row = one
-                break
-        conn.commit()
+        try:
+            for i in cursor.execute(query, tuple, multi=True):
+                one = i.fetchone()
+                if one is not None:
+                    row = one
+                    break
+            conn.commit()
+        except RuntimeError:
+            row = (None, None, None, None)
+
         cursor.close()
 
         if row == (None, None, None, None):
             return error_frame("None to download", 404, show_content=True)
 
         return success_frame("Success!", 200, content={
-            "mod_id": int(str(row[0]).split(".")[0]),
+            "mod_id": row[0],
             "file_id": row[1],
             "mod_name": row[2],
             "mod_version": row[3]
