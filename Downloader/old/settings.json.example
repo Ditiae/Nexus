@@ -1,6 +1,0 @@
-# Fill in the details below, remove this line and rename this file to settings.json
-{
-  "download_dir": "downloads",
-  "endpoint": "https://www.tdpain.net/nexusapi/",
-  "auth_key": "put your internal auth key here"
-}
