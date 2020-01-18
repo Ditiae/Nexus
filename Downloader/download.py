@@ -268,6 +268,15 @@ with logger.catch():
 
         print("Download completed")
 
+        # 5: rclone file (in separate thread?)
+
+        print("Rclone'ing")
+
+        rclone_command = f"rclone move {'-P ' if RCLONE_PROGRESS else ''}{mod_dir} " \
+            f"{RCLONE_REMOTE}:/{RCLONE_DIRECTORY}/{GAME}/{real_mod_id}/"
+
+        os.system(rclone_command)
+
         # 4: Set status to completed
 
         print("Updating download status")
@@ -277,14 +286,5 @@ with logger.catch():
 
         if not r.ok:
             eprint(f"Error returned from internal API\n{r.status_code} - {r.text}")
-
-        # 5: rclone file (in separate thread?)
-
-        print("Rclone'ing")
-
-        rclone_command = f"rclone move {'-P ' if RCLONE_PROGRESS else ''}{mod_dir} " \
-            f"{RCLONE_REMOTE}:/{RCLONE_DIRECTORY}/{GAME}/{real_mod_id}/"
-
-        os.system(rclone_command)
 
         print("Complete\n")
