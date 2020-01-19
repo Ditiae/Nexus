@@ -126,6 +126,7 @@ with logger.catch():
     RCLONE_DIRECTORY = SETTINGS["rclone"]["directory"]
     RCLONE_PROGRESS = SETTINGS["rclone"]["show_progress"]
     RCLONE_ENABLE = SETTINGS["rclone"]["enable"]
+    MOD_NAME_LENGTH = SETTINGS["mod_name_len"]
 
     print("Checking for download directory")
 
@@ -257,7 +258,7 @@ with logger.catch():
 
         mod_dir = os.path.join(DOWNLOAD_DIRECTORY, GAME)
         make_directory(mod_dir)
-        zip_name = os.path.join(mod_dir, str(real_mod_id) + "-" + mod_name[:25] + (("-" + mod_version) if mod_version is not None else "") + "-" + str(file_id) + ".zip")
+        zip_name = os.path.join(mod_dir, str(real_mod_id) + "-" + mod_name[:MOD_NAME_LENGTH] + (("-" + mod_version) if mod_version is not None else "") + "-" + str(file_id) + ".zip")
         # zip_name = os.path.join(mod_dir,
         #                         str(file_id) + "-" + mod_name[:25] + (("-" + mod_version) if mod_version is not None else "") + ".zip")
         source_name_from_url = download_link.split('/')[-1].split("?")[0]

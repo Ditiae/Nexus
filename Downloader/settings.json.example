@@ -4,6 +4,7 @@
   "auth_key": "put your internal auth key here",
   "game": "skyrim",
   "download_folder": "downloads",
+  "mod_name_len": 40,
   "nexus_keys": [
     "put your nexus api keys in this list here"
   ],
