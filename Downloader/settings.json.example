@@ -1,6 +1,15 @@
 # Fill in the details below, remove this line and rename this file to settings.json
 {
-  "download_dir": "downloads",
   "endpoint": "https://www.tdpain.net/nexusapi/",
-  "auth_key": "put your internal auth key here"
+  "auth_key": "put your internal auth key here",
+  "game": "skyrim",
+  "download_folder": "downloads",
+  "nexus_keys": [
+    "put your nexus api keys in this list here"
+  ],
+  "rclone": {
+    "remote_name": "target rclone remote",
+    "directory": "downloads",
+    "show_progress": false
+  }
 }

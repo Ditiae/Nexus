@@ -1,3 +1,3 @@
-# Mod downloader
+# Downloader
 
-Find docs at https://github.com/Wea1thRS/Nexus/wiki/Downloader
+See [https://github.com/Wea1thRS/Nexus/wiki/Downloader](https://github.com/Wea1thRS/Nexus/wiki/Scraper-configuration-and-usage).
