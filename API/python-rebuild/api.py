@@ -240,7 +240,7 @@ def create():
 
     # check if ID already exists, and if so, stop
 
-    rows = db_query("SELECT * FROM skyrim WHERE mod_id`1`=%s", [inputs["mod_id"]], conn)
+    rows = db_query("SELECT * FROM skyrim WHERE mod_id=%s", [inputs["mod_id"]], conn)
 
     if len(rows) != 0:
         return error_frame("An entry with that mod ID already exists", 400)
