@@ -9,6 +9,7 @@ import os
 import zipfile
 import json
 from common import iprint, aprint, qprint, eprint, qcol
+import re
 
 
 # logger.remove(0)  # remove output to stderr DEBUG
@@ -190,7 +191,7 @@ with logger.catch():
         internal_mod_id = r_json["content"]["mod_id"]  # has the weird decimal point thing used in the database
         real_mod_id = int(str(r_json["content"]["mod_id"]).split(".")[0])  # removes everything past the decimal point
         file_id = r_json["content"]["file_id"]
-        mod_name = r_json["content"]["mod_name"]
+        mod_name = re.sub(r"[\<\>\"\:\\\/\|\?\*]", "", r_json["content"]["mod_name"])  # remove forbidden windows chars
         mod_version = r_json["content"]["mod_version"]
 
         print("Mod ID", real_mod_id)
