@@ -125,6 +125,7 @@ with logger.catch():
     RCLONE_REMOTE = SETTINGS["rclone"]["remote_name"]
     RCLONE_DIRECTORY = SETTINGS["rclone"]["directory"]
     RCLONE_PROGRESS = SETTINGS["rclone"]["show_progress"]
+    RCLONE_ENABLE = SETTINGS["rclone"]["enable"]
 
     print("Checking for download directory")
 
@@ -254,10 +255,11 @@ with logger.catch():
 
         # 3: Download mod
 
-        mod_dir = os.path.join(DOWNLOAD_DIRECTORY, GAME, str(real_mod_id))
+        mod_dir = os.path.join(DOWNLOAD_DIRECTORY, GAME)
         make_directory(mod_dir)
-        zip_name = os.path.join(mod_dir,
-                                str(file_id) + "-" + mod_name[:25] + (("-" + mod_version) if mod_version is not None else "") + ".zip")
+        zip_name = os.path.join(mod_dir, str(real_mod_id) + "-" + mod_name[:25] + (("-" + mod_version) if mod_version is not None else "") + "-" + str(file_id) + ".zip")
+        # zip_name = os.path.join(mod_dir,
+        #                         str(file_id) + "-" + mod_name[:25] + (("-" + mod_version) if mod_version is not None else "") + ".zip")
         source_name_from_url = download_link.split('/')[-1].split("?")[0]
 
         aprint(f"Begin download of {zip_name}")
@@ -270,12 +272,14 @@ with logger.catch():
 
         # 5: rclone file (in separate thread?)
 
-        print("Rclone'ing")
+        if RCLONE_ENABLE:
 
-        rclone_command = f"rclone move {'-P ' if RCLONE_PROGRESS else ''}{mod_dir} " \
-            f"{RCLONE_REMOTE}:/{RCLONE_DIRECTORY}/{GAME}/{real_mod_id}/"
+	        print("Rclone'ing")
 
-        os.system(rclone_command)
+	        rclone_command = f"rclone move {'-P ' if RCLONE_PROGRESS else ''}{mod_dir} " \
+	            f"{RCLONE_REMOTE}:/{RCLONE_DIRECTORY}/{GAME}/"
+
+	        os.system(rclone_command)
 
         # 4: Set status to completed
 

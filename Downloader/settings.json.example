@@ -8,6 +8,7 @@
     "put your nexus api keys in this list here"
   ],
   "rclone": {
+    "enable": true,
     "remote_name": "target rclone remote",
     "directory": "downloads",
     "show_progress": false
