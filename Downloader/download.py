@@ -205,6 +205,8 @@ with logger.catch():
             headers=nexus_headers
         )
 
+        ratelimit_wrapper(r)
+
         try:
             r_json = r.json()
         except json.decoder.JSONDecodeError:
